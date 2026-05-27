@@ -1,0 +1,6 @@
+{
+  "name": "Beat Showcase",
+  "description": "An elite, interactive dark purple neon beat showcase for audio producers featuring Montserrat styling, live Web Audio API synth playback, real-time visualizers, and streamlined licensing inquiry forms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
