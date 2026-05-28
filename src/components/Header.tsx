@@ -1,8 +1,14 @@
 import { Star, Mail, Play } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900/40 px-6 py-4 transition-all">
+    <motion.header 
+      initial={{ y: -20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900/40 px-6 py-4 transition-all"
+    >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
         {/* Logo / Brand */}
@@ -18,9 +24,6 @@ export default function Header() {
           <a href="#beats-section" className="hover:text-white transition-colors flex items-center gap-1.5 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
             Beats Catalog
-          </a>
-          <a href="#licensing-section" className="hover:text-white transition-colors py-1">
-            Licensing Price
           </a>
           <a href="#contact-section" className="hover:text-white transition-colors py-1 flex items-center gap-1">
             Collaborations
@@ -39,6 +42,6 @@ export default function Header() {
         </div>
 
       </div>
-    </header>
+    </motion.header>
   );
 }

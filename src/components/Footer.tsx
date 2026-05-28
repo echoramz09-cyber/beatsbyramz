@@ -1,6 +1,7 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Mail, Instagram, Youtube, Twitter, Radio, Check, FileText, Send, Heart, Sparkles } from 'lucide-react';
-import { LICENSE_OPTIONS, PRODUCER_PROFILE } from '../data';
+import { Mail, Instagram, Youtube, Twitter, Radio, Check, Send, Heart, Sparkles } from 'lucide-react';
+import { PRODUCER_PROFILE } from '../data';
+import { motion } from 'motion/react';
 
 interface FooterProps {
   prefill?: {
@@ -41,66 +42,18 @@ export default function Footer({ prefill }: FooterProps) {
   return (
     <footer className="bg-zinc-950 border-t border-zinc-900 pb-36 pt-16">
       
-      {/* 1. Licensing Guide segment */}
-      <section id="licensing-section" className="max-w-7xl mx-auto px-6 mb-20">
-        <div className="text-center space-y-2 mb-12">
-          <span className="text-purple-400 font-mono text-[10px] uppercase tracking-widest font-bold">Transparent Pricing</span>
-          <h3 className="text-3xl font-sans font-black text-white tracking-tight">Licensing Guide</h3>
-          <p className="text-xs text-zinc-500 font-mono max-w-md mx-auto">
-            Choose the perfect legal license structure to unleash your music on Spotify, Apple Music, and YouTube safely.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {LICENSE_OPTIONS.map((opt) => (
-            <div 
-              key={opt.type}
-              className={`p-6 rounded-3xl border flex flex-col justify-between space-y-6 ${
-                opt.type === 'premium' 
-                  ? 'bg-purple-950/10 border-purple-500/40 shadow-xl relative' 
-                  : 'bg-zinc-900/30 border-zinc-900'
-              }`}
-            >
-              {opt.type === 'premium' && (
-                <span className="absolute -top-3 left-6 bg-purple-600 text-white font-mono text-[9px] uppercase tracking-widest font-black px-3 py-1 rounded-full border border-purple-500 shadow-md">
-                  Most Popular
-                </span>
-              )}
-
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-zinc-400 font-mono text-xs uppercase">{opt.name}</h4>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-3xl font-mono font-black text-white">${opt.price.toFixed(2)}</span>
-                    <span className="text-zinc-550 text-[10px] font-mono">/one-time</span>
-                  </div>
-                </div>
-
-                <ul className="space-y-2 border-t border-zinc-900/70 pt-4">
-                  {opt.features.map((feat, idx) => (
-                    <li key={idx} className="flex gap-2 items-start text-xs text-zinc-400">
-                      <Check className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="p-3 bg-zinc-950/50 border border-zinc-900 rounded-xl flex items-center gap-2">
-                <FileText className="w-4 h-4 text-zinc-500 flex-shrink-0" />
-                <span className="text-[10px] text-zinc-500 font-mono">Includes Signed PDF Contract Contract</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* 2. Contact & Collaboration forms segment */}
-      <section id="contact-section" className="max-w-7xl mx-auto px-6 border-t border-zinc-900 pt-16 mb-16">
+      <section id="contact-section" className="max-w-7xl mx-auto px-6 pt-16 mb-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           
           {/* Bio side details */}
-          <div className="lg:col-span-5 space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="lg:col-span-5 space-y-6"
+          >
             <div className="flex items-center gap-4">
               <img 
                 src={PRODUCER_PROFILE.avatarUrl} 
@@ -124,21 +77,27 @@ export default function Footer({ prefill }: FooterProps) {
                 <span className="text-zinc-300">{PRODUCER_PROFILE.socials.email}</span>
               </div>
               <div className="flex gap-3 pt-2">
-                <a href={`https://${PRODUCER_PROFILE.socials.instagram}`} target="_blank" rel="noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors" title="Instagram">
+                <motion.a whileHover={{ scale: 1.15, y: -2 }} whileTap={{ scale: 0.95 }} href={`https://${PRODUCER_PROFILE.socials.instagram}`} target="_blank" rel="noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors" title="Instagram">
                   <Instagram className="w-4 h-4" />
-                </a>
-                <a href={`https://${PRODUCER_PROFILE.socials.youtube}`} target="_blank" rel="noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors" title="YouTube">
+                </motion.a>
+                <motion.a whileHover={{ scale: 1.15, y: -2 }} whileTap={{ scale: 0.95 }} href={`https://${PRODUCER_PROFILE.socials.youtube}`} target="_blank" rel="noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors" title="YouTube">
                   <Youtube className="w-4 h-4" />
-                </a>
-                <a href={`https://${PRODUCER_PROFILE.socials.twitter}`} target="_blank" rel="noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors" title="Twitter">
+                </motion.a>
+                <motion.a whileHover={{ scale: 1.15, y: -2 }} whileTap={{ scale: 0.95 }} href={`https://${PRODUCER_PROFILE.socials.twitter}`} target="_blank" rel="noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors" title="Twitter">
                   <Twitter className="w-4 h-4" />
-                </a>
+                </motion.a>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Form Side */}
-          <div className="lg:col-span-7 bg-zinc-900/20 border border-zinc-900 p-6 md:p-8 rounded-3xl space-y-6">
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+            className="lg:col-span-7 bg-zinc-900/20 border border-zinc-900 p-6 md:p-8 rounded-3xl space-y-6"
+          >
             <div>
               <h4 className="text-lg font-sans font-bold text-white tracking-tight">Need Custom Sounds?</h4>
               <p className="text-xs text-zinc-500 font-mono mt-1">Submit vocal references or custom tempo arrangements for custom exclusivity options.</p>
@@ -203,7 +162,9 @@ export default function Footer({ prefill }: FooterProps) {
                 </div>
               )}
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.985 }}
                 type="submit"
                 disabled={loading}
                 id="btn-submit-contact"
@@ -217,9 +178,9 @@ export default function Footer({ prefill }: FooterProps) {
                     <span>Send Inquiry Details</span>
                   </>
                 )}
-              </button>
+              </motion.button>
             </form>
-          </div>
+          </motion.div>
 
         </div>
       </section>

@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { Track } from '../types';
 import { Play, Pause, Search, Tag, Music, SlidersHorizontal, Headphones } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface TrackListProps {
   tracks: Track[];
   onPlayToggle: (track: Track) => void;
-  onLicensingClick: (track: Track) => void;
+  onInquiryClick: (track: Track) => void;
   activeTrackId: string | undefined;
   isPlaying: boolean;
 }
 
-export default function TrackList({ tracks, onPlayToggle, onLicensingClick, activeTrackId, isPlaying }: TrackListProps) {
+export default function TrackList({ tracks, onPlayToggle, onInquiryClick, activeTrackId, isPlaying }: TrackListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenre, setSelectedGenre] = useState('All');
 
@@ -105,8 +106,11 @@ export default function TrackList({ tracks, onPlayToggle, onLicensingClick, acti
                 const isPlayingRow = isActive && isPlaying;
 
                 return (
-                  <div
+                  <motion.div
                     key={track.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
                     className={`grid grid-cols-12 gap-4 items-center px-4 py-4 rounded-2xl hover:bg-zinc-900/40 transition-colors border border-transparent hover:border-zinc-900/40 group ${
                       isActive ? 'bg-zinc-900/30 border-zinc-900' : ''
                     }`}
@@ -176,18 +180,15 @@ export default function TrackList({ tracks, onPlayToggle, onLicensingClick, acti
                     {/* Get License / PURCHASE Action Button */}
                     <div className="col-span-2 text-right">
                       <button
-                        onClick={() => onLicensingClick(track)}
+                        onClick={() => onInquiryClick(track)}
                         id={`purchase-btn-${track.id}`}
-                        className="py-2.5 px-4 rounded-xl font-mono text-[11px] font-bold tracking-wide uppercase transition-all bg-zinc-900 border border-zinc-800 text-white hover:text-white hover:bg-purple-600 hover:border-purple-600 cursor-pointer shadow-md inline-flex items-center gap-1.5"
+                        className="py-2.5 px-5 rounded-xl font-mono text-[11px] font-extrabold tracking-wide uppercase transition-all bg-zinc-900 border border-zinc-800 text-white hover:text-white hover:bg-purple-600 hover:border-purple-600 cursor-pointer shadow-md inline-flex items-center"
                       >
-                        <span>Lease</span>
-                        <span className="text-[10px] text-purple-400 font-normal group-hover:text-white">
-                          ${track.priceBasic.toFixed(0)}+
-                        </span>
+                        <span>Inquire</span>
                       </button>
                     </div>
 
-                  </div>
+                  </motion.div>
                 );
               })
             )}

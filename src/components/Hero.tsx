@@ -1,26 +1,42 @@
 import { Play, Pause, Disc } from 'lucide-react';
 import { Track } from '../types';
+import { motion } from 'motion/react';
 
 interface HeroProps {
   trendingTrack: Track | null;
   isPlaying: boolean;
   isPlayingTrending: boolean;
   onPlayToggle: (track: Track) => void;
-  onLicensingClick: (track: Track) => void;
+  onInquiryClick: (track: Track) => void;
 }
 
-export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPlayToggle, onLicensingClick }: HeroProps) {
+export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPlayToggle, onInquiryClick }: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-zinc-950 pt-16 pb-12 px-6 border-b border-zinc-900 flex flex-col items-center text-center">
       
       {/* Decorative Neon Blur Orbs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl -z-10" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-pink-600/10 blur-3xl -z-10 animate-pulse" />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 1.5, ease: 'easeOut' }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-purple-600/10 blur-3xl -z-10" 
+      />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 0.6, scale: 1.1 }}
+        transition={{ duration: 2.5, ease: 'easeInOut', repeat: Infinity, repeatType: "reverse" }}
+        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-pink-600/10 blur-3xl -z-10" 
+      />
 
       <div className="max-w-3xl mx-auto space-y-8 flex flex-col items-center">
         
         {/* Title Browse */}
-        <div className="space-y-3">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: 'easeOut' }}
+          className="space-y-3"
+        >
           <div className="inline-flex items-center gap-2 bg-purple-950/40 border border-purple-500/30 px-3 py-1 rounded-full text-purple-400 font-mono text-[10px] uppercase tracking-widest">
             <Disc className="w-3 h-3 text-purple-400 animate-spin" style={{ animationDuration: '3s' }} />
             <span>Spotlight Instrumental</span>
@@ -30,13 +46,18 @@ export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPl
             Browse the <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400">Sonic Vault</span>
           </h2>
           <p className="text-zinc-550 text-xs sm:text-sm font-sans max-w-lg leading-relaxed font-normal">
-            Listen to exclusive, pristine, industry-standard beats produced by <span className="text-purple-400">beatsbyramz</span>. Stream raw previews and select lease options below.
+            Listen to exclusive, pristine, industry-standard beats produced by <span className="text-purple-400">beatsbyramz</span>. Stream previews and submit an inquiry below.
           </p>
-        </div>
+        </motion.div>
 
         {/* Beats Showcase Widget (Centered) */}
         {trendingTrack && (
-          <div className="relative w-full max-w-[360px] group">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.25, ease: 'easeOut' }}
+            className="relative w-full max-w-[360px] group"
+          >
             
             {/* Soft glowing background border */}
             <div className="absolute inset-x-0 -bottom-1 -top-1 bg-gradient-to-tr from-purple-600 via-pink-500 to-purple-600 rounded-3xl blur-md opacity-25 group-hover:opacity-40 transition-opacity duration-500" />
@@ -88,21 +109,21 @@ export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPl
               {/* Showcase action trigger */}
               <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between gap-3 text-left">
                 <div>
-                  <div className="text-[9px] text-zinc-500 font-mono uppercase tracking-wider">Lease Lease From</div>
-                  <div className="text-lg font-mono font-black text-white">${trendingTrack.priceBasic.toFixed(2)}</div>
+                  <div className="text-[9px] text-zinc-550 font-mono uppercase tracking-wider">Sound Spec</div>
+                  <div className="text-sm font-mono font-black text-white">{trendingTrack.key} • {trendingTrack.bpm} BPM</div>
                 </div>
                 
                 <button
-                  onClick={() => onLicensingClick(trendingTrack)}
+                  onClick={() => onInquiryClick(trendingTrack)}
                   id="hero-buy-trending-btn"
                   className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-sans font-extrabold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer"
                 >
-                  Lease Options
+                  Inquire Now
                 </button>
               </div>
 
             </div>
-          </div>
+          </motion.div>
         )}
 
       </div>

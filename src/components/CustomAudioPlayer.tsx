@@ -3,12 +3,13 @@ import { Track } from '../types';
 import AudioEngine from '../utils/AudioEngine';
 import AudioVisualizer from './AudioVisualizer';
 import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface CustomAudioPlayerProps {
-  onLicensingClick: (track: Track) => void;
+  onInquiryClick: (track: Track) => void;
 }
 
-export default function CustomAudioPlayer({ onLicensingClick }: CustomAudioPlayerProps) {
+export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerProps) {
   const [playerState, setPlayerState] = useState({
     isPlaying: false,
     currentTrack: null as Track | null,
@@ -73,7 +74,13 @@ export default function CustomAudioPlayer({ onLicensingClick }: CustomAudioPlaye
   const formattedProgress = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
   return (
-    <div id="sticky-audio-player" className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-900 px-6 py-4 z-40 shadow-2xl">
+    <motion.div 
+      id="sticky-audio-player" 
+      initial={{ y: 80, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: 'spring', damping: 25, stiffness: 180 }}
+      className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-900 px-6 py-4 z-40 shadow-2xl"
+    >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         
         {/* Left Section: Active Track Info */}
@@ -180,18 +187,17 @@ export default function CustomAudioPlayer({ onLicensingClick }: CustomAudioPlaye
             />
           </div>
 
-          {/* Quick Buy license */}
+          {/* Inquiry trigger details */}
           <button
-            onClick={() => onLicensingClick(currentTrack)}
+            onClick={() => onInquiryClick(currentTrack)}
             id="sticky-buy-license-btn"
-            className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans font-bold text-xs tracking-wider uppercase transition-all shadow-lg active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+            className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans font-extrabold text-xs tracking-wider uppercase transition-all shadow-lg active:scale-95 cursor-pointer flex items-center justify-center"
           >
-            <span>Licensing</span>
-            <span className="text-[10px] font-mono text-purple-200">${currentTrack.priceBasic.toFixed(0)}+</span>
+            <span>Inquire About Beat</span>
           </button>
         </div>
 
       </div>
-    </div>
+    </motion.div>
   );
 }

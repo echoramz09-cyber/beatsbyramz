@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Track, LicenseType } from './types';
+import { Track } from './types';
 import { TRACKS } from './data';
 import AudioEngine from './utils/AudioEngine';
 
@@ -9,12 +9,10 @@ import Hero from './components/Hero';
 import TrackList from './components/TrackList';
 import Footer from './components/Footer';
 import CustomAudioPlayer from './components/CustomAudioPlayer';
-import LicensingModal from './components/LicensingModal';
 
 export default function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
-  const [selectedTrackForLicense, setSelectedTrackForLicense] = useState<Track | null>(null);
   
   // Track inquiry variables to pass into the footer's contact form
   const [contactPrefill, setContactPrefill] = useState<{
@@ -38,26 +36,13 @@ export default function App() {
     AudioEngine.togglePlay(track);
   };
 
-  // Licensing modal trigger
-  const handleLicensingClick = (track: Track) => {
-    setSelectedTrackForLicense(track);
-  };
-
-  // Handle licensing inquiry redirection & pre-fill
-  const handleInquiryRequest = (track: Track, licenseType: LicenseType, price: number) => {
-    const licenseName = licenseType.toUpperCase();
-    
-    // Choose the closest relevant subject
-    const subject = licenseType === 'unlimited' ? 'Exclusive Rights Purchase' : 'Custom Beat Inquiry';
-    
-    // Pre-create the custom message
-    const message = `Hi beatsbyramz,\n\nI am extremely interested in obtaining the ${licenseName} License Lease for your beat "${track.title}" (priced at $${price.toFixed(2)}). \n\nPlease send through the licensing contract or next payment instructions so we can secure this beat for my upcoming release!`;
+  // Handle beat inquiry redirection & pre-fill (No licensing or pricing details)
+  const handleInquiryClick = (track: Track) => {
+    const subject = `Inquiry: "${track.title}"`;
+    const message = `Hi beatsbyramz,\n\nI am ultra interested in inquiring about your beat "${track.title}" (${track.genre}, ${track.bpm} BPM).\n\nPlease get back to me with the availability or collaboration options for this beat!`;
 
     // Set form prefill details
     setContactPrefill({ subject, message });
-
-    // Close modal
-    setSelectedTrackForLicense(null);
 
     // Smooth scroll down to the contact inquiries segment
     setTimeout(() => {
@@ -73,7 +58,7 @@ export default function App() {
           }, 3000);
         }
       }
-    }, 150);
+    }, 155);
   };
 
   // Default trending track
@@ -94,14 +79,14 @@ export default function App() {
           isPlaying={isPlaying}
           isPlayingTrending={!!trendingTrack && activeTrack?.id === trendingTrack.id && isPlaying}
           onPlayToggle={handlePlayToggle}
-          onLicensingClick={handleLicensingClick}
+          onInquiryClick={handleInquiryClick}
         />
 
         {/* Beats Selector Section */}
         <TrackList 
           tracks={TRACKS}
           onPlayToggle={handlePlayToggle}
-          onLicensingClick={handleLicensingClick}
+          onInquiryClick={handleInquiryClick}
           activeTrackId={activeTrack?.id}
           isPlaying={isPlaying}
         />
@@ -113,17 +98,8 @@ export default function App() {
 
       {/* Sticky Player HUD */}
       <CustomAudioPlayer 
-        onLicensingClick={handleLicensingClick} 
+        onInquiryClick={handleInquiryClick} 
       />
-
-      {/* Overlays / Triggers */}
-      {selectedTrackForLicense && (
-        <LicensingModal 
-          track={selectedTrackForLicense}
-          onClose={() => setSelectedTrackForLicense(null)}
-          onInquiryRequest={handleInquiryRequest}
-        />
-      )}
 
     </div>
   );
