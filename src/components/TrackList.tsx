@@ -9,10 +9,19 @@ interface TrackListProps {
   onInquiryClick: (track: Track) => void;
   activeTrackId: string | undefined;
   isPlaying: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
-export default function TrackList({ tracks, onPlayToggle, onInquiryClick, activeTrackId, isPlaying }: TrackListProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+export default function TrackList({ 
+  tracks, 
+  onPlayToggle, 
+  onInquiryClick, 
+  activeTrackId, 
+  isPlaying,
+  searchQuery,
+  setSearchQuery
+}: TrackListProps) {
   const [selectedGenre, setSelectedGenre] = useState('All');
 
   // Find unique genres dynamically
@@ -30,27 +39,13 @@ export default function TrackList({ tracks, onPlayToggle, onInquiryClick, active
   });
 
   return (
-    <section id="beats-section" className="py-20 px-6 bg-zinc-950 max-w-7xl mx-auto space-y-10">
+    <section id="beats-section" className="py-20 px-6 max-w-7xl mx-auto space-y-10">
       
-      {/* Search and Filters Header */}
+      {/* Catalog Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-zinc-900">
         <div className="space-y-1">
           <h3 className="text-3xl font-sans font-black text-white tracking-tight">Instrumental Catalog</h3>
           <p className="text-xs text-zinc-500 font-mono">Filter by mood, search tags, or listen to synthesised previews.</p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-          {/* Search Box */}
-          <div className="relative flex-1 sm:w-80">
-            <Search className="w-4.5 h-4.5 text-zinc-500 absolute left-4.5 top-3.5" />
-            <input
-              type="text"
-              placeholder="Search by name, artist style, tags..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900 hover:bg-zinc-850 focus:bg-zinc-900 text-sm pl-11 pr-4 py-3 border border-zinc-800 focus:border-purple-500 rounded-2xl text-white placeholder-zinc-500 focus:outline-none transition-all font-sans"
-            />
-          </div>
         </div>
       </div>
 

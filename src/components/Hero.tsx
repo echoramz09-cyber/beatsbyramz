@@ -1,4 +1,4 @@
-import { Play, Pause, Disc } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { Track } from '../types';
 import { motion } from 'motion/react';
 
@@ -37,17 +37,10 @@ export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPl
           transition={{ duration: 0.7, ease: 'easeOut' }}
           className="space-y-3"
         >
-          <div className="inline-flex items-center gap-2 bg-purple-950/40 border border-purple-500/30 px-3 py-1 rounded-full text-purple-400 font-mono text-[10px] uppercase tracking-widest">
-            <Disc className="w-3 h-3 text-purple-400 animate-spin" style={{ animationDuration: '3s' }} />
-            <span>Spotlight Instrumental</span>
-          </div>
           
-          <h2 className="text-3xl sm:text-5xl font-sans font-black tracking-tight text-white leading-tight uppercase">
-            Browse the <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400">Sonic Vault</span>
+          <h2 className="text-3xl sm:text-5xl font-sans font-black tracking-tight leading-tight uppercase">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400">Top Beats</span>
           </h2>
-          <p className="text-zinc-550 text-xs sm:text-sm font-sans max-w-lg leading-relaxed font-normal">
-            Listen to exclusive, pristine, industry-standard beats produced by <span className="text-purple-400">beatsbyramz</span>. Stream previews and submit an inquiry below.
-          </p>
         </motion.div>
 
         {/* Beats Showcase Widget (Centered) */}

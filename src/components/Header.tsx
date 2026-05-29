@@ -1,7 +1,12 @@
-import { Star, Mail, Play } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { motion } from 'motion/react';
 
-export default function Header() {
+interface HeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
+
+export default function Header({ searchQuery, setSearchQuery }: HeaderProps) {
   return (
     <motion.header 
       initial={{ y: -20, opacity: 0 }}
@@ -19,26 +24,16 @@ export default function Header() {
           </h1>
         </div>
 
-        {/* Middle Navigation - Clean Anchors */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-mono text-zinc-400">
-          <a href="#beats-section" className="hover:text-white transition-colors flex items-center gap-1.5 py-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-            Beats Catalog
-          </a>
-          <a href="#contact-section" className="hover:text-white transition-colors py-1 flex items-center gap-1">
-            Collaborations
-          </a>
-        </nav>
-
-        {/* Right Interactions */}
-        <div className="flex items-center gap-3">
-          <a 
-            href="#contact-section" 
-            className="text-xs font-mono text-purple-400 hover:text-white hover:bg-purple-950/20 border border-purple-900/40 hover:border-purple-500/80 px-4 py-2 rounded-xl transition-all flex items-center gap-1.5"
-          >
-            <Mail className="w-3.5 h-3.5" />
-            <span>Send Lead Inquiry</span>
-          </a>
+        {/* Right side Search Input */}
+        <div className="relative w-40 sm:w-64">
+          <Search className="w-4 h-4 text-zinc-550 absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder="Search beats..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-zinc-900 focus:bg-zinc-900 hover:bg-zinc-850 text-xs pl-9 pr-3 py-2 border border-zinc-800 focus:border-purple-500 rounded-xl text-white placeholder-zinc-500 focus:outline-none transition-all font-sans"
+          />
         </div>
 
       </div>
