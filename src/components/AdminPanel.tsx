@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { LogIn, LogOut, Shield, Plus, Edit2, Trash2, X, Music, Check, Settings, Save, Sparkles, Filter, ChevronRight } from 'lucide-react';
+import { LogIn, LogOut, Shield, Plus, Edit2, Trash2, X, Music, Check, Settings, Save, Sparkles, Filter, ChevronRight, Hash, Layout } from 'lucide-react';
 import { signInAnonymously, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { fetchBeats, addBeat, updateBeat, deleteBeat } from '../lib/beatService';
+import { fetchGenres, addGenre, deleteGenre, Genre } from '../lib/genreService';
 import { Track } from '../types';
 
 interface AdminPanelProps {
@@ -20,13 +21,18 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Catalog items
   const [beats, setBeats] = useState<Track[]>([]);
-  const [activeFormTab, setActiveFormTab] = useState<'list' | 'add' | 'edit'>('list');
+  const [genres, setGenres] = useState<Genre[]>([]);
+  const [activeFormTab, setActiveFormTab] = useState<'list' | 'add' | 'edit' | 'genres'>('list');
   const [selectedBeat, setSelectedBeat] = useState<Track | null>(null);
+  const [adminGenreFilter, setAdminGenreFilter] = useState('All');
+
+  // Genre management state
+  const [newGenreName, setNewGenreName] = useState('');
 
   // Form State
   const [formData, setFormData] = useState({
@@ -55,50 +61,111 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   };
 
   useEffect(() => {
-    // We already check user locally via handleLogin
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        localStorage.setItem('beatsbyramz_admin_session', JSON.stringify({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          isFirebase: true
+        }));
+      }
+      setIsLoading(false);
+    });
+
     if (user) {
       loadBeats();
+      loadGenres();
     }
-  }, [user]);
+
+    return () => unsubscribe();
+  }, []);
 
   const loadBeats = async () => {
-    setIsLoading(true);
     try {
       const list = await fetchBeats();
       setBeats(list);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const loadGenres = async () => {
+    try {
+      const list = await fetchGenres();
+      setGenres(list);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAddGenre = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGenreName.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await addGenre(newGenreName.trim());
+      setNewGenreName('');
+      await loadGenres();
+    } catch (err) {
+      alert('Failed to add genre.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteGenre = async (id: string) => {
+    if (confirm('Delete this genre? Existing beats with this genre will keep it until edited.')) {
+      try {
+        await deleteGenre(id);
+        await loadGenres();
+      } catch (err) {
+        alert('Failed to delete genre.');
+      }
     }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     if (username === 'asxramzonfire09' && password === 'rehanabegum123') {
-      // Establish a local admin session. 
-      // We'll skip Firebase Auth for now to avoid provider enablement friction.
-      const mockUser = { uid: 'admin-local', email: 'admin@ramz.fire' } as any;
-      localStorage.setItem('beatsbyramz_admin_session', JSON.stringify(mockUser));
-      setUser(mockUser); 
-      loadBeats();
-      setIsLoading(false);
+      try {
+        // Attempt anonymous sign-in, but don't block if it's disabled in console
+        await signInAnonymously(auth).catch(err => {
+          console.warn('Anonymous Auth disabled in console. Proceeding with local admin session.', err);
+        });
+        
+        // Establish a local admin session even if Auth provider is disabled
+        const mockUser = { uid: 'admin-bypass', email: 'admin@beatsbyramz.fire' } as any;
+        localStorage.setItem('beatsbyramz_admin_session', JSON.stringify(mockUser));
+        setUser(mockUser); 
+        loadBeats();
+        loadGenres();
+        setIsLoading(false);
+      } catch (err: any) {
+        setLoginError(`Login Error: ${err.message || 'Unknown error'}`);
+        console.error('Login Error:', err);
+      }
     } else {
       setLoginError('Invalid Administrator credentials.');
-      setIsLoading(false);
     }
+    setIsSubmitting(false);
   };
 
   const handleLogout = async () => {
-    localStorage.removeItem('beatsbyramz_admin_session');
-    setUser(null);
-    setBeats([]);
-    setUsername('');
-    setPassword('');
-    setActiveFormTab('list');
+    try {
+      await signOut(auth);
+      localStorage.removeItem('beatsbyramz_admin_session');
+      setUser(null);
+      setBeats([]);
+      setUsername('');
+      setPassword('');
+      setActiveFormTab('list');
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
   };
 
   const handleEditClick = (beat: Track) => {
@@ -150,6 +217,29 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       } catch (err) {
         alert('Deletion failed due to rules check.');
       }
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (adminGenreFilter === 'All') return;
+    
+    const targets = beats.filter(b => b.genre === adminGenreFilter);
+    if (targets.length === 0) return;
+
+    if (confirm(`MASS PURGE WARNING: You are about to delete ALL ${targets.length} beats in the "${adminGenreFilter}" genre. This cannot be undone. Proceed?`)) {
+       setIsSubmitting(true);
+       try {
+         for (const beat of targets) {
+           await deleteBeat(beat.id);
+         }
+         await loadBeats();
+         onCatalogRefresh();
+         alert(`Successfully purged ${targets.length} beats.`);
+       } catch (err) {
+         alert('Bulk deletion partially failed.');
+       } finally {
+         setIsSubmitting(false);
+       }
     }
   };
 
@@ -318,6 +408,18 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add New Beat</span>
                 </button>
+
+                <button
+                  onClick={() => setActiveFormTab('genres')}
+                  className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-sans font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${
+                    activeFormTab === 'genres' 
+                      ? 'bg-purple-650 text-white shadow-md shadow-purple-950/30' 
+                      : 'text-zinc-400 hover:text-white hover:bg-zinc-850/40'
+                  }`}
+                >
+                  <Layout className="w-3.5 h-3.5" />
+                  <span>Manage Genres</span>
+                </button>
               </div>
 
               <div>
@@ -343,9 +445,34 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
               {/* Beats List */}
               {activeFormTab === 'list' && (
                 <div className="flex-grow flex flex-col overflow-hidden px-6 py-6">
-                  <div className="mb-4">
-                    <h4 className="text-base font-bold font-sans tracking-tight">Active Instrumentals</h4>
-                    <p className="text-[10px] text-zinc-400 font-mono">Total catalog tracks: {beats.length}</p>
+                  <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                      <h4 className="text-base font-bold font-sans tracking-tight">Active Instrumentals</h4>
+                      <p className="text-[10px] text-zinc-400 font-mono">Total catalog tracks: {beats.length}</p>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                       {adminGenreFilter !== 'All' && (
+                         <button 
+                           onClick={handleBulkDelete}
+                           className="bg-rose-950/20 hover:bg-rose-900/30 text-rose-400 border border-rose-900/30 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider flex items-center gap-1 transition-all"
+                         >
+                           <Trash2 className="w-3 h-3" />
+                           Purge All
+                         </button>
+                       )}
+                       <span className="text-[9px] text-zinc-500 font-mono uppercase">Filter:</span>
+                       <select 
+                         value={adminGenreFilter}
+                         onChange={(e) => setAdminGenreFilter(e.target.value)}
+                         className="bg-zinc-950 border border-zinc-850 rounded-lg px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-purple-500"
+                       >
+                         <option value="All">All Genres</option>
+                         {genres.map(g => (
+                           <option key={g.id} value={g.name}>{g.name}</option>
+                         ))}
+                       </select>
+                    </div>
                   </div>
 
                   <div className="flex-grow overflow-y-auto pr-1">
@@ -354,13 +481,15 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                         <span className="w-6 h-6 border-2 border-t-transparent border-purple-500 rounded-full animate-spin"></span>
                         <span className="text-[10px] text-zinc-500 font-mono">Synchronizing beats...</span>
                       </div>
-                    ) : beats.length === 0 ? (
+                    ) : beats.filter(b => adminGenreFilter === 'All' || b.genre === adminGenreFilter).length === 0 ? (
                       <div className="border border-dashed border-zinc-800 text-center rounded-2xl py-12 px-4 shadow-inner bg-zinc-950/20">
-                        <span className="text-xs text-zinc-500">No tracks registered. Click "Add New Beat" to fill the database.</span>
+                        <span className="text-xs text-zinc-500">No tracks matches the current filter.</span>
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-2.5 pb-2">
-                        {beats.map((beat) => (
+                        {beats
+                          .filter(b => adminGenreFilter === 'All' || b.genre === adminGenreFilter)
+                          .map((beat) => (
                           <div 
                             key={beat.id}
                             className="flex items-center justify-between bg-zinc-950/40 hover:bg-zinc-950/80 border border-zinc-850/60 hover:border-zinc-800 px-4 py-3 rounded-2xl transition-all"
@@ -375,7 +504,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                               <div className="min-w-0">
                                 <h5 className="text-xs text-zinc-100 font-sans font-bold truncate leading-none">{beat.title}</h5>
                                 <p className="text-[9px] text-zinc-500 font-mono truncate leading-none pt-1">
-                                  {beat.genre} • {beat.bpm} BPM • {beat.key}
+                                  {beat.genre} • {beat.bpm} BPM • {beat.duration} • {beat.key}
                                 </p>
                               </div>
                             </div>
@@ -400,6 +529,50 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                         ))}
                       </div>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Genre Management Panel */}
+              {activeFormTab === 'genres' && (
+                <div className="flex-grow flex flex-col overflow-hidden px-6 py-6 font-sans">
+                  <div className="mb-6">
+                    <h4 className="text-base font-bold tracking-tight">Genre Architecture</h4>
+                    <p className="text-[10px] text-zinc-400 font-mono">Create custom classification tags for your catalog</p>
+                  </div>
+
+                  <form onSubmit={handleAddGenre} className="mb-6 flex gap-2">
+                    <input 
+                      type="text"
+                      value={newGenreName}
+                      onChange={(e) => setNewGenreName(e.target.value)}
+                      placeholder="e.g., Afro-Fusion"
+                      className="flex-grow bg-zinc-950 border border-zinc-850 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                    />
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Genre
+                    </button>
+                  </form>
+
+                  <div className="flex-grow overflow-y-auto">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {genres.map((genre) => (
+                        <div key={genre.id} className="flex items-center justify-between bg-zinc-950/40 border border-zinc-850 px-4 py-3 rounded-2xl group">
+                          <span className="text-xs font-mono text-zinc-100">{genre.name}</span>
+                          <button 
+                            onClick={() => handleDeleteGenre(genre.id)}
+                            className="p-1.5 rounded-lg text-zinc-650 hover:text-rose-400 hover:bg-rose-955/10 transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -482,12 +655,27 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                           onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
                           className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono text-zinc-300"
                         >
-                          <option value="Trap">Trap</option>
-                          <option value="Lofi Chill">Lofi Chill</option>
-                          <option value="Synthwave">Synthwave</option>
-                          <option value="Hyperpop">Hyperpop</option>
-                          <option value="Hip Hop">Hip Hop</option>
+                          {genres.length > 0 ? (
+                            genres.map(g => (
+                              <option key={g.id} value={g.name}>{g.name}</option>
+                            ))
+                          ) : (
+                            <option value="Trap">Trap</option>
+                          )}
                         </select>
+                      </div>
+
+                      {/* Duration */}
+                      <div>
+                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 leading-none">Time Duration (MM:SS)</label>
+                        <input 
+                          type="text" 
+                          value={formData.duration}
+                          onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+                          placeholder="3:45"
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                          required
+                        />
                       </div>
 
                       {/* Artwork URL */}

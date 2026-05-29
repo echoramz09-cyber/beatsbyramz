@@ -1,5 +1,5 @@
 import { collection, getDocs, doc, setDoc, deleteDoc, updateDoc, query, orderBy, serverTimestamp } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from './firebase';
+import { db, auth, handleFirestoreError, OperationType } from './firebase';
 import { Track } from '../types';
 
 const COLLECTION_NAME = 'beats';
@@ -69,8 +69,8 @@ export async function fetchBeats(): Promise<Track[]> {
       return dateB - dateA;
     });
 
-    // If Firestore is brand new/empty, automatically seed with high-quality default catalog
-    if (beatsList.length === 0) {
+    // If Firestore is brand new/empty, and user is an admin, automatically seed
+    if (beatsList.length === 0 && auth.currentUser) {
       console.log('Seeding initial beats catalog to Firestore...');
       for (const defaultBeat of DEFAULT_SEED_BEATS) {
         const docRef = doc(db, COLLECTION_NAME, defaultBeat.id);

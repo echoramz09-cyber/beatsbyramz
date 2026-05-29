@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Track } from '../types';
+import { Genre } from '../lib/genreService';
 import { Play, Pause, Search, Tag, Music, SlidersHorizontal, Headphones } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface TrackListProps {
   tracks: Track[];
+  genresList: Genre[];
   onPlayToggle: (track: Track) => void;
   activeTrackId: string | undefined;
   isPlaying: boolean;
@@ -14,6 +16,7 @@ interface TrackListProps {
 
 export default function TrackList({ 
   tracks, 
+  genresList,
   onPlayToggle, 
   activeTrackId, 
   isPlaying,
@@ -22,8 +25,8 @@ export default function TrackList({
 }: TrackListProps) {
   const [selectedGenre, setSelectedGenre] = useState('All');
 
-  // Find unique genres dynamically
-  const genres = ['All', ...Array.from(new Set(tracks.map(t => t.genre)))];
+  // Use dynamic genres from Firebase + 'All'
+  const genreFilters = ['All', ...genresList.map(g => g.name)];
 
   // Filtering Logic
   const filteredTracks = tracks.filter(track => {
@@ -36,6 +39,16 @@ export default function TrackList({
     return matchesSearch && matchesGenre;
   });
 
+  // Group filtered tracks by genre
+  const groupedTracks = filteredTracks.reduce((acc, track) => {
+    if (!acc[track.genre]) acc[track.genre] = [];
+    acc[track.genre].push(track);
+    return acc;
+  }, {} as Record<string, Track[]>);
+
+  // Sort genres (e.g., alphabetically, or however you prefer)
+  const sortedGenreGroups = Object.keys(groupedTracks).sort();
+
   return (
     <section id="beats-section" className="py-20 px-6 max-w-7xl mx-auto space-y-10">
       
@@ -46,29 +59,29 @@ export default function TrackList({
         </div>
       </div>
 
-      {/* Modern Filter Chip Row */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-zinc-500 font-sans font-bold text-[10px] uppercase tracking-widest mr-2 hidden sm:inline flex-shrink-0">
-          Genre Sort:
-        </span>
-        {genres.map((g) => {
-          const isSelected = selectedGenre === g;
-          return (
-            <button
-              key={g}
-              onClick={() => setSelectedGenre(g)}
-              id={`filter-genre-btn-${g.replace(/\s+/g, '-').toLowerCase()}`}
-              className={`px-4 py-2 rounded-xl text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer ${
-                isSelected 
-                  ? 'bg-purple-600 border border-purple-500 text-white shadow-lg shadow-purple-500/15' 
-                  : 'bg-zinc-900 border border-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-850'
-              }`}
-            >
-              {g}
-            </button>
-          );
-        })}
-      </div>
+        {/* Modern Filter Chip Row */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-zinc-500 font-sans font-bold text-[10px] uppercase tracking-widest mr-2 hidden sm:inline flex-shrink-0">
+            Quick Filter:
+          </span>
+          {genreFilters.map((g) => {
+            const isSelected = selectedGenre === g;
+            return (
+              <button
+                key={g}
+                onClick={() => setSelectedGenre(g)}
+                id={`filter-genre-btn-${g.replace(/\s+/g, '-').toLowerCase()}`}
+                className={`px-4 py-2 rounded-xl text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer ${
+                  isSelected 
+                    ? 'bg-purple-600 border border-purple-500 text-white shadow-lg shadow-purple-500/15' 
+                    : 'bg-zinc-900 border border-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-850'
+                }`}
+              >
+                {g}
+              </button>
+            );
+          })}
+        </div>
 
       {/* Catalog Render Table */}
       <div className="overflow-x-auto">
@@ -78,98 +91,112 @@ export default function TrackList({
           <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-sans text-[10px] uppercase tracking-widest font-black">
             <div className="col-span-1 text-center">Preview</div>
             <div className="col-span-4 pl-4">Title</div>
-            <div className="col-span-2 text-center">BPM</div>
+            <div className="col-span-2 text-center">BPM • Time</div>
             <div className="col-span-2 text-center">Key</div>
             <div className="col-span-3 pl-4">Tags</div>
           </div>
 
-          {/* Table Beats List */}
-          <div className="divide-y divide-zinc-900/50 mt-1">
-            {filteredTracks.length === 0 ? (
-              <div className="col-span-12 py-16 text-center text-zinc-550 border border-dashed border-zinc-900 rounded-3xl mt-4">
+          {/* Table Beats List grouped by Genre */}
+          <div className="divide-y divide-zinc-900/10 mt-1">
+            {sortedGenreGroups.length === 0 ? (
+              <div className="py-16 text-center text-zinc-550 border border-dashed border-zinc-900 rounded-3xl mt-4">
                 <Music className="w-10 h-10 mx-auto text-zinc-650 mb-3" />
                 <p className="text-zinc-400 font-semibold font-sans">No matching instrumentals found</p>
                 <p className="text-[11px] text-zinc-550 font-mono mt-1">Try tweaking your filters or adjusting your tags query.</p>
               </div>
             ) : (
-              filteredTracks.map((track) => {
-                const isActive = activeTrackId === track.id;
-                const isPlayingRow = isActive && isPlaying;
+              sortedGenreGroups.map((genre) => (
+                <div key={genre} className={selectedGenre === 'All' ? 'py-1' : 'py-4'}>
+                  {/* Category Header - Hidden when 'All' is selected */}
+                  {selectedGenre !== 'All' && (
+                    <div className="px-4 py-3 bg-zinc-900/20 rounded-xl mb-2 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+                      <h3 className="text-[10px] font-sans font-black text-zinc-400 uppercase tracking-[0.2em]">{genre}</h3>
+                      <span className="text-[9px] text-zinc-650 font-mono">({groupedTracks[genre].length} items)</span>
+                    </div>
+                  )}
 
-                return (
-                  <motion.div
-                    key={track.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35, ease: 'easeOut' }}
-                    className={`grid grid-cols-12 gap-4 items-center px-4 py-4 rounded-2xl hover:bg-zinc-900/40 transition-colors border border-transparent hover:border-zinc-900/40 group ${
-                      isActive ? 'bg-zinc-900/30 border-zinc-900' : ''
-                    }`}
-                  >
-                    {/* Visualizer and Play buttons */}
-                    <div className="col-span-1 flex justify-center">
-                      <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 flex-shrink-0">
-                        <img 
-                          src={track.artwork} 
-                          alt={track.title} 
-                          className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-30"
-                          referrerPolicy="no-referrer"
-                        />
-                        <button
-                          onClick={() => onPlayToggle(track)}
-                          id={`row-play-btn-${track.id}`}
-                          className="absolute inset-0 m-auto flex items-center justify-center bg-transparent group-hover:bg-black/40 text-white transition-all rounded-full cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
-                          aria-label={isPlayingRow ? "Pause" : "Play"}
+                  <div className="space-y-1">
+                    {groupedTracks[genre].map((track) => {
+                      const isActive = activeTrackId === track.id;
+                      const isPlayingRow = isActive && isPlaying;
+
+                      return (
+                        <motion.div
+                          key={track.id}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                          className={`grid grid-cols-12 gap-4 items-center px-4 py-4 rounded-2xl hover:bg-zinc-900/40 transition-colors border border-transparent hover:border-zinc-900/40 group ${
+                            isActive ? 'bg-zinc-900/30 border-zinc-900' : ''
+                          }`}
                         >
-                          {isPlayingRow ? (
-                            <Pause className="w-4 h-4 fill-white animate-pulse" />
-                          ) : (
-                            <Play className="w-4 h-4 fill-white translate-x-0.5" />
-                          )}
-                        </button>
+                          {/* Visualizer and Play buttons */}
+                          <div className="col-span-1 flex justify-center">
+                            <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 flex-shrink-0">
+                              <img 
+                                src={track.artwork} 
+                                alt={track.title} 
+                                className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-30"
+                                referrerPolicy="no-referrer"
+                              />
+                              <button
+                                onClick={() => onPlayToggle(track)}
+                                id={`row-play-btn-${track.id}`}
+                                className="absolute inset-0 m-auto flex items-center justify-center bg-transparent group-hover:bg-black/40 text-white transition-all rounded-full cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                aria-label={isPlayingRow ? "Pause" : "Play"}
+                              >
+                                {isPlayingRow ? (
+                                  <Pause className="w-4 h-4 fill-white animate-pulse" />
+                                ) : (
+                                  <Play className="w-4 h-4 fill-white translate-x-0.5" />
+                                )}
+                              </button>
 
-                        {/* If playing & NOT hovered, display audio equalizer animations directly in the tiny artwork panel */}
-                        {isPlayingRow && (
-                          <div className="absolute inset-0 bg-purple-900/50 flex gap-0.5 items-end justify-center pb-2.5 group-hover:opacity-0 pointer-events-none transition-opacity">
-                            <span className="w-1.0 bg-white animate-[bounce_0.8s_infinite] h-4"></span>
-                            <span className="w-1.0 bg-white animate-[bounce_0.5s_infinite_0.15s] h-6"></span>
-                            <span className="w-1.0 bg-white animate-[bounce_0.7s_infinite_0.3s] h-3"></span>
+                              {isPlayingRow && (
+                                <div className="absolute inset-0 bg-purple-900/50 flex gap-0.5 items-end justify-center pb-2.5 group-hover:opacity-0 pointer-events-none transition-opacity">
+                                  <span className="w-1.0 bg-white animate-[bounce_0.8s_infinite] h-4"></span>
+                                  <span className="w-1.0 bg-white animate-[bounce_0.5s_infinite_0.15s] h-6"></span>
+                                  <span className="w-1.0 bg-white animate-[bounce_0.7s_infinite_0.3s] h-3"></span>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
-                      </div>
-                    </div>
 
-                    {/* Title & Tagline, etc. */}
-                    <div className="col-span-4 pl-4 min-w-0">
-                      <h4 className="text-white text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
-                      <p className="text-[11px] text-zinc-500 font-sans truncate mt-0.5">{track.tagline}</p>
-                    </div>
+                          {/* Title & Tagline, etc. */}
+                          <div className="col-span-4 pl-4 min-w-0">
+                            <h4 className="text-white text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
+                            <p className="text-[11px] text-zinc-500 font-sans truncate mt-0.5">{track.tagline}</p>
+                          </div>
 
-                    {/* BPM */}
-                    <div className="col-span-2 text-center font-mono text-zinc-300 text-xs">
-                      {track.bpm}
-                    </div>
+                          {/* BPM & Time */}
+                          <div className="col-span-2 text-center font-mono text-zinc-300 text-xs">
+                            {track.bpm} <span className="text-zinc-650 px-1">•</span> {track.duration}
+                          </div>
 
-                    {/* KEY */}
-                    <div className="col-span-2 text-center font-mono text-zinc-400 text-xs">
-                      {track.key}
-                    </div>
+                          {/* KEY */}
+                          <div className="col-span-2 text-center font-mono text-zinc-400 text-xs">
+                            {track.key}
+                          </div>
 
-                    {/* TAGS */}
-                    <div className="col-span-3 pl-4 flex flex-wrap gap-1.5 overflow-hidden">
-                      {track.tags.map(tag => (
-                        <span 
-                          key={tag}
-                          className="text-[9px] font-mono font-medium tracking-wide bg-zinc-900 group-hover:bg-zinc-850 hover:text-white transition-colors text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                        >
-                          <Tag className="w-2 h-2 text-zinc-550" />
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </motion.div>
-                );
-              })
+                          {/* TAGS */}
+                          <div className="col-span-3 pl-4 flex flex-wrap gap-1.5 overflow-hidden">
+                            {track.tags.map(tag => (
+                              <span 
+                                key={tag}
+                                className="text-[9px] font-mono font-medium tracking-wide bg-zinc-900 group-hover:bg-zinc-850 hover:text-white transition-colors text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded-full flex items-center gap-0.5"
+                              >
+                                <Tag className="w-2 h-2 text-zinc-550" />
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
             )}
           </div>
 
@@ -177,4 +204,5 @@ export default function TrackList({
       </div>
     </section>
   );
+
 }

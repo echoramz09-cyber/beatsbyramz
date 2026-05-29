@@ -88,7 +88,7 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
                   <div className="mt-3 text-left space-y-0.5">
                     <h4 className="text-[11px] font-sans font-black text-white truncate uppercase tracking-tight">{track.title}</h4>
                     <div className="flex items-center justify-between text-[9px] text-zinc-500 font-mono">
-                      <span>{track.bpm}</span>
+                      <span>{track.bpm} • {track.duration}</span>
                       <span className="lowercase">{track.key}</span>
                     </div>
                   </div>

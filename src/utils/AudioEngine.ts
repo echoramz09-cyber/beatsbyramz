@@ -202,6 +202,14 @@ class AudioEngineClass {
     this.notify();
   }
 
+  public seek(time: number) {
+    if (this.audioEl) {
+      this.audioEl.currentTime = time;
+      this.playbackPosition = time;
+      this.notify();
+    }
+  }
+
   public getTrackProgress(): number {
     return this.playbackPosition;
   }

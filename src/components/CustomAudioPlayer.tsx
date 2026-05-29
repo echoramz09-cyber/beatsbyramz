@@ -38,6 +38,15 @@ export default function CustomAudioPlayer() {
 
   if (!currentTrack) return null;
 
+  const parseDuration = (durationStr: string) => {
+    if (!durationStr) return 180; // default 3 min
+    const parts = durationStr.split(':').map(Number);
+    if (parts.length === 2) {
+      return (parts[0] * 60) + parts[1];
+    }
+    return 180;
+  };
+
   const handlePlayPause = () => {
     AudioEngine.togglePlay(currentTrack);
   };
@@ -66,10 +75,20 @@ export default function CustomAudioPlayer() {
   };
 
   // Format progress ticks to readable time (infinite loop progress simulation styled as bars)
-  const barProgress = (progress * currentTrack.bpm) / 120; // scale tick speed
-  const seconds = Math.floor(barProgress % 60);
-  const minutes = Math.floor(barProgress / 60);
-  const formattedProgress = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  const formatTime = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = Math.floor(totalSeconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const durationSeconds = parseDuration(currentTrack.duration);
+  const formattedProgress = formatTime(progress);
+  const progressPercent = Math.min(100, (progress / durationSeconds) * 100);
+
+  const handleSeek = (e: ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    AudioEngine.seek(newTime);
+  };
 
   return (
     <motion.div 
@@ -150,12 +169,30 @@ export default function CustomAudioPlayer() {
           </div>
 
           {/* Timeline slider representation */}
-          <div className="flex items-center gap-2.5 w-full text-zinc-550 text-[10px] font-mono leading-none">
+          <div className="flex items-center gap-2.5 w-full text-zinc-550 text-[10px] font-mono leading-none group">
             <span>{formattedProgress}</span>
-            <div className="flex-1 h-1 bg-zinc-900 rounded-full overflow-hidden relative">
+            <div className="flex-1 relative flex items-center h-4">
+              <input 
+                type="range"
+                min="0"
+                max={durationSeconds}
+                step="0.1"
+                value={progress}
+                onChange={handleSeek}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden relative">
+                <motion.div 
+                  className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-purple-500 to-pink-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"
+                  initial={false}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 0.1 }}
+                />
+              </div>
+              {/* Playhead */}
               <div 
-                className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-purple-500 to-pink-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]"
-                style={{ width: `${Math.min(100, (progress * 4) % 100)}%` }} // beautiful cyclical virtual track tracking
+                className="absolute w-2.5 h-2.5 bg-white rounded-full shadow-[0_0_8px_rgba(255,255,255,0.8)] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0"
+                style={{ left: `calc(${progressPercent}% - 5px)` }}
               />
             </div>
             <span>{currentTrack.duration}</span>

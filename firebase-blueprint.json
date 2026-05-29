@@ -68,12 +68,32 @@
         }
       },
       "required": ["id", "title", "bpm", "genre", "artwork"]
+    },
+    "genre": {
+      "title": "Genre",
+      "description": "A musical genre tag for classification",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier (kebab-case name)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name of the genre"
+        }
+      },
+      "required": ["id", "name"]
     }
   },
   "firestore": {
     "beats": {
       "schema": "beat",
       "description": "Collection of beats added by the administrator"
+    },
+    "genres": {
+      "schema": "genre",
+      "description": "Collection of available genres for the catalog"
     }
   }
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Track } from './types';
 import { fetchBeats } from './lib/beatService';
+import { fetchGenres, Genre } from './lib/genreService';
 import AudioEngine from './utils/AudioEngine';
 import { motion, AnimatePresence } from 'motion/react';
 import { Shield, Sparkles } from 'lucide-react';
@@ -39,15 +40,20 @@ export default function App() {
   
   // Dynamic beats list state from Firestore
   const [tracks, setTracks] = useState<Track[]>([]);
+  const [genres, setGenres] = useState<Genre[]>([]);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isLoadingTracks, setIsLoadingTracks] = useState(true);
 
-  // Load beats list from Firestore
-  const loadBeatsList = async () => {
+  // Load catalog data from Firestore
+  const loadCatalogData = async () => {
     setIsLoadingTracks(true);
     try {
-      const liveTracks = await fetchBeats();
+      const [liveTracks, liveGenres] = await Promise.all([
+        fetchBeats(),
+        fetchGenres()
+      ]);
       setTracks(liveTracks);
+      setGenres(liveGenres);
     } catch (e) {
       console.error("Failed to sync catalog:", e);
     } finally {
@@ -56,7 +62,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    loadBeatsList();
+    loadCatalogData();
   }, []);
 
   // Sync isPlaying & activeTrack with state changes from the central AudioEngine singleton
@@ -213,6 +219,7 @@ export default function App() {
         {/* Beats Selector Section */}
         <TrackList 
           tracks={tracks}
+          genresList={genres}
           onPlayToggle={handlePlayToggle}
           activeTrackId={activeTrack?.id}
           isPlaying={isPlaying}
@@ -233,7 +240,7 @@ export default function App() {
        <AdminPanel 
          isOpen={isAdminOpen} 
          onClose={() => setIsAdminOpen(false)} 
-         onCatalogRefresh={loadBeatsList} 
+         onCatalogRefresh={loadCatalogData} 
        />
 
       {/* Sticky Player HUD */}

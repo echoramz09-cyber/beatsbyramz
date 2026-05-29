@@ -6,9 +6,45 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Beats catalog: Anyone can view and edit (Temporarily public for development unblocking)
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidBeat(data) {
+      return data.keys().hasAll(['id', 'title', 'bpm', 'genre', 'artwork']) &&
+             data.id is string && data.title is string && data.bpm is number &&
+             data.genre is string && data.artwork is string;
+    }
+
+    function isValidGenre(data) {
+      return data.keys().hasAll(['id', 'name']) &&
+             data.id is string && data.name is string;
+    }
+
+    // Beats catalog: Anyone can view and edit (Auth-less mode)
     match /beats/{beatId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if isValidId(beatId) && isValidBeat(incoming());
+      allow delete: if true;
+    }
+
+    // Genres collection: Anyone can view and edit (Auth-less mode)
+    match /genres/{genreId} {
+      allow read: if true;
+      allow create, update: if isValidId(genreId) && isValidGenre(incoming());
+      allow delete: if true;
     }
   }
 }
