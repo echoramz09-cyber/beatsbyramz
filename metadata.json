@@ -1,6 +1,6 @@
 {
-  "name": "The Official Digital Store Of beatsbyramz",
-  "description": "The premier digital destination for high-quality instrumentals and exclusive soundscapes by beatsbyramz. Browse, preview, and license elite production across various genres.",
+  "name": "BeatsbyRamz",
+  "description": "The Official Digital Store Of beatsbyramz",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
