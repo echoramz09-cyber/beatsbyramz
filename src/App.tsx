@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Track } from './types';
-import { TRACKS } from './data';
+import { fetchBeats } from './lib/beatService';
 import AudioEngine from './utils/AudioEngine';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Shield, Sparkles } from 'lucide-react';
 
 // Import UI sub-components
 import Header from './components/Header';
@@ -10,6 +11,8 @@ import Hero from './components/Hero';
 import TrackList from './components/TrackList';
 import Footer from './components/Footer';
 import CustomAudioPlayer from './components/CustomAudioPlayer';
+import AdminPanel from './components/AdminPanel';
+import LoadingScreen from './components/LoadingScreen';
 
 const COSMIC_PARTICLES = [
   { id: 1, size: 6, left: "8%", top: "12%", delay: 0, duration: 18, color: "#d946ef", driftX: [0, 60, -40, 0], driftY: [0, -50, 70, 0] },
@@ -34,11 +37,27 @@ export default function App() {
   const [activeTrack, setActiveTrack] = useState<Track | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Track inquiry variables to pass into the footer's contact form
-  const [contactPrefill, setContactPrefill] = useState<{
-    subject: string;
-    message: string;
-  } | null>(null);
+  // Dynamic beats list state from Firestore
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isLoadingTracks, setIsLoadingTracks] = useState(true);
+
+  // Load beats list from Firestore
+  const loadBeatsList = async () => {
+    setIsLoadingTracks(true);
+    try {
+      const liveTracks = await fetchBeats();
+      setTracks(liveTracks);
+    } catch (e) {
+      console.error("Failed to sync catalog:", e);
+    } finally {
+      setIsLoadingTracks(false);
+    }
+  };
+
+  useEffect(() => {
+    loadBeatsList();
+  }, []);
 
   // Sync isPlaying & activeTrack with state changes from the central AudioEngine singleton
   useEffect(() => {
@@ -56,37 +75,16 @@ export default function App() {
     AudioEngine.togglePlay(track);
   };
 
-  // Handle beat inquiry redirection & pre-fill (No licensing or pricing details)
-  const handleInquiryClick = (track: Track) => {
-    const subject = `Inquiry: "${track.title}"`;
-    const message = `Hi beatsbyramz,\n\nI am ultra interested in inquiring about your beat "${track.title}" (${track.genre}, ${track.bpm} BPM).\n\nPlease get back to me with the availability or collaboration options for this beat!`;
-
-    // Set form prefill details
-    setContactPrefill({ subject, message });
-
-    // Smooth scroll down to the contact inquiries segment
-    setTimeout(() => {
-      const contactSec = document.getElementById('contact-section');
-      if (contactSec) {
-        contactSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Flash visual highlight of the inquiries box for responsive UX
-        const formBox = contactSec.querySelector('form');
-        if (formBox) {
-          formBox.classList.add('neon-border');
-          setTimeout(() => {
-            formBox.classList.remove('neon-border');
-          }, 3000);
-        }
-      }
-    }, 155);
-  };
-
   // Default trending track
-  const trendingTrack = TRACKS.length > 0 ? TRACKS[0] : null;
+  const trendingTrack = tracks.length > 0 ? tracks[0] : null;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
       
+      <AnimatePresence mode="wait">
+        {isLoadingTracks && <LoadingScreen key="loader" />}
+      </AnimatePresence>
+
       {/* Dynamic Ambient Background Light Leaks */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {/* Soft Pink cosmic leak top left */}
@@ -213,14 +211,12 @@ export default function App() {
           isPlaying={isPlaying}
           isPlayingTrending={!!trendingTrack && activeTrack?.id === trendingTrack.id && isPlaying}
           onPlayToggle={handlePlayToggle}
-          onInquiryClick={handleInquiryClick}
         />
 
         {/* Beats Selector Section */}
         <TrackList 
-          tracks={TRACKS}
+          tracks={tracks}
           onPlayToggle={handlePlayToggle}
-          onInquiryClick={handleInquiryClick}
           activeTrackId={activeTrack?.id}
           isPlaying={isPlaying}
           searchQuery={searchQuery}
@@ -229,15 +225,22 @@ export default function App() {
 
       </main>
 
-      {/* Contract comparison & Message grids */}
-      <div className="relative z-10 w-full">
-        <Footer prefill={contactPrefill} />
-      </div>
+       {/* Contract comparison & Message grids */}
+       <div className="relative z-10 w-full">
+         <Footer 
+           onAdminClick={() => setIsAdminOpen(true)}
+         />
+       </div>
+ 
+       {/* Admin Panel Console Overlay Drawer */}
+       <AdminPanel 
+         isOpen={isAdminOpen} 
+         onClose={() => setIsAdminOpen(false)} 
+         onCatalogRefresh={loadBeatsList} 
+       />
 
       {/* Sticky Player HUD */}
-      <CustomAudioPlayer 
-        onInquiryClick={handleInquiryClick} 
-      />
+      <CustomAudioPlayer />
 
     </div>
   );

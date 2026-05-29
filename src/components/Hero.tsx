@@ -7,10 +7,9 @@ interface HeroProps {
   isPlaying: boolean;
   isPlayingTrending: boolean;
   onPlayToggle: (track: Track) => void;
-  onInquiryClick: (track: Track) => void;
 }
 
-export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPlayToggle, onInquiryClick }: HeroProps) {
+export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPlayToggle }: HeroProps) {
   return (
     <section className="relative overflow-hidden bg-zinc-950 pt-16 pb-12 px-6 border-b border-zinc-900 flex flex-col items-center text-center">
       
@@ -68,7 +67,7 @@ export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPl
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-85" />
                 
                 {/* Dynamic Status Badging */}
-                <span className="absolute top-3 left-3 bg-purple-600 text-white font-mono font-bold text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md animate-pulse">
+                <span className="absolute top-3 left-3 bg-purple-600 text-white font-sans font-bold text-[8px] uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md animate-pulse">
                   Feature Track
                 </span>
 
@@ -89,9 +88,9 @@ export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPl
 
               {/* Title / Description */}
               <div className="mt-4 space-y-1.5 text-left">
-                <div className="flex items-center justify-between text-zinc-500 font-mono text-[9px]">
+                <div className="flex items-center justify-between text-zinc-500 font-sans font-bold text-[9px]">
                   <span className="text-purple-400 uppercase tracking-widest">{trendingTrack.genre}</span>
-                  <span>{trendingTrack.bpm} BPM • {trendingTrack.key}</span>
+                  <span className="uppercase tracking-wider">{trendingTrack.bpm} BPM • {trendingTrack.key}</span>
                 </div>
                 <h3 className="text-xl font-sans font-black text-white tracking-tight">{trendingTrack.title}</h3>
                 <p className="text-xs text-zinc-400 font-sans line-clamp-2">
@@ -99,20 +98,16 @@ export default function Hero({ trendingTrack, isPlaying, isPlayingTrending, onPl
                 </p>
               </div>
 
-              {/* Showcase action trigger */}
-              <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-between gap-3 text-left">
-                <div>
-                  <div className="text-[9px] text-zinc-550 font-mono uppercase tracking-wider">Sound Spec</div>
-                  <div className="text-sm font-mono font-black text-white">{trendingTrack.key} • {trendingTrack.bpm} BPM</div>
+              {/* Showcase info */}
+              <div className="mt-4 pt-3 border-t border-zinc-850 flex items-center justify-center gap-6">
+                <div className="text-center">
+                  <div className="text-[9px] text-zinc-550 font-sans font-bold uppercase tracking-widest">Tempo</div>
+                  <div className="text-sm font-sans font-black text-white">{trendingTrack.bpm} BPM</div>
                 </div>
-                
-                <button
-                  onClick={() => onInquiryClick(trendingTrack)}
-                  id="hero-buy-trending-btn"
-                  className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-sans font-extrabold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer"
-                >
-                  Inquire Now
-                </button>
+                <div className="text-center">
+                  <div className="text-[9px] text-zinc-550 font-sans font-bold uppercase tracking-widest">Key</div>
+                  <div className="text-sm font-sans font-black text-white lowercase">in {trendingTrack.key}</div>
+                </div>
               </div>
 
             </div>

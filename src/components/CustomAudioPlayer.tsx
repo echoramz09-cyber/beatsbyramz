@@ -5,11 +5,9 @@ import AudioVisualizer from './AudioVisualizer';
 import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio } from 'lucide-react';
 import { motion } from 'motion/react';
 
-interface CustomAudioPlayerProps {
-  onInquiryClick: (track: Track) => void;
-}
+interface CustomAudioPlayerProps {}
 
-export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerProps) {
+export default function CustomAudioPlayer() {
   const [playerState, setPlayerState] = useState({
     isPlaying: false,
     currentTrack: null as Track | null,
@@ -96,7 +94,7 @@ export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerP
             <div className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <span className="text-[9px] text-emerald-400 font-mono uppercase tracking-widest font-semibold">
-                Synthesizing Live
+                Now Playing
               </span>
             </div>
             <h4 className="text-white text-sm font-sans font-bold truncate tracking-tight">
@@ -117,7 +115,7 @@ export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerP
               className={`p-1.5 rounded-lg transition-colors ${
                 isLooping ? 'text-purple-400 bg-purple-950/20' : 'text-zinc-650 hover:text-zinc-400'
               }`}
-              title="Continuous Looping (Enabled by Default)"
+              title="Continuous Looping"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
@@ -127,7 +125,7 @@ export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerP
               onClick={handlePlayPause}
               id="sticky-play-pause-btn"
               className="w-11 h-11 rounded-full bg-white hover:scale-105 active:scale-95 text-zinc-950 flex items-center justify-center transition-all cursor-pointer shadow-lg shadow-white/5"
-              aria-label={isPlaying ? "Pause Beat" : "Play Beat"}
+              aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5 fill-zinc-950" />
@@ -140,7 +138,7 @@ export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerP
             <button
               onClick={handleRestart}
               className="p-1.5 text-zinc-650 hover:text-zinc-400 rounded-lg transition-all"
-              title="Restart Rhythmic Pattern"
+              title="Restart Beat"
             >
               <RotateCcw className="w-4 h-4 scale-x-[-1]" />
             </button>
@@ -164,7 +162,7 @@ export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerP
           </div>
         </div>
 
-        {/* Right Section: Volume & Fast Purchase Actions */}
+        {/* Right Section: Volume */}
         <div className="flex items-center justify-end gap-4 w-full md:w-1/3">
           
           {/* Volume Control */}
@@ -186,15 +184,6 @@ export default function CustomAudioPlayer({ onInquiryClick }: CustomAudioPlayerP
               className="w-20 accent-purple-500 h-1 bg-zinc-900 rounded-lg cursor-pointer"
             />
           </div>
-
-          {/* Inquiry trigger details */}
-          <button
-            onClick={() => onInquiryClick(currentTrack)}
-            id="sticky-buy-license-btn"
-            className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans font-extrabold text-xs tracking-wider uppercase transition-all shadow-lg active:scale-95 cursor-pointer flex items-center justify-center"
-          >
-            <span>Inquire About Beat</span>
-          </button>
         </div>
 
       </div>

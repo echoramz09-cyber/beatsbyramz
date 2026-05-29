@@ -12,7 +12,9 @@ export interface Track {
   duration: string;
   artwork: string;
   mood: 'Dark' | 'Chill' | 'Energetic' | 'Inspiring' | 'Hypnotic';
-  synthStyle: 'ambient_trap' | 'lofi_chill' | 'hyperpop' | 'cyber_electro';
+  beatUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export type LicenseType = 'basic' | 'premium' | 'unlimited';
@@ -34,7 +36,6 @@ export interface CartItem {
 export interface ProducerProfile {
   name: string;
   tagline: string;
-  about: string;
   avatarUrl: string;
   socials: {
     instagram?: string;

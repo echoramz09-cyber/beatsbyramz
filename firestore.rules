@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Beats catalog: Anyone can view and edit (Temporarily public for development unblocking)
+    match /beats/{beatId} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "beat": {
+      "title": "Beat",
+      "description": "An instrumental beat in the catalog",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the beat"
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the beat"
+        },
+        "tagline": {
+          "type": "string",
+          "description": "Brief tagline or description"
+        },
+        "bpm": {
+          "type": "number",
+          "description": "Beats per minute"
+        },
+        "key": {
+          "type": "string",
+          "description": "Musical key of the beat"
+        },
+        "genre": {
+          "type": "string",
+          "description": "Genre classification"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags/styles as strings"
+        },
+        "priceBasic": {
+          "type": "number",
+          "description": "License price for basic"
+        },
+        "pricePremium": {
+          "type": "number",
+          "description": "License price for premium"
+        },
+        "priceUnlimited": {
+          "type": "number",
+          "description": "License price for unlimited"
+        },
+        "duration": {
+          "type": "string",
+          "description": "Duration formatted as MM:SS"
+        },
+        "artwork": {
+          "type": "string",
+          "description": "Artwork image URL"
+        },
+        "mood": {
+          "type": "string",
+          "description": "Mood of the beat"
+        },
+        "beatUrl": {
+          "type": "string",
+          "description": "External audio URL to play"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "title", "bpm", "genre", "artwork"]
+    }
+  },
+  "firestore": {
+    "beats": {
+      "schema": "beat",
+      "description": "Collection of beats added by the administrator"
+    }
+  }
+}

@@ -6,7 +6,6 @@ import { motion } from 'motion/react';
 interface TrackListProps {
   tracks: Track[];
   onPlayToggle: (track: Track) => void;
-  onInquiryClick: (track: Track) => void;
   activeTrackId: string | undefined;
   isPlaying: boolean;
   searchQuery: string;
@@ -16,7 +15,6 @@ interface TrackListProps {
 export default function TrackList({ 
   tracks, 
   onPlayToggle, 
-  onInquiryClick, 
   activeTrackId, 
   isPlaying,
   searchQuery,
@@ -44,14 +42,13 @@ export default function TrackList({
       {/* Catalog Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-zinc-900">
         <div className="space-y-1">
-          <h3 className="text-3xl font-sans font-black text-white tracking-tight">Instrumental Catalog</h3>
-          <p className="text-xs text-zinc-500 font-mono">Filter by mood, search tags, or listen to synthesised previews.</p>
+          <p className="text-xs text-zinc-500 font-sans font-bold uppercase tracking-wider">Filter by mood, search tags, or listen to high-quality beat previews.</p>
         </div>
       </div>
 
       {/* Modern Filter Chip Row */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-zinc-500 font-mono text-[10px] uppercase tracking-wider mr-2 hidden sm:inline flex-shrink-0">
+        <span className="text-zinc-500 font-sans font-bold text-[10px] uppercase tracking-widest mr-2 hidden sm:inline flex-shrink-0">
           Genre Sort:
         </span>
         {genres.map((g) => {
@@ -61,9 +58,9 @@ export default function TrackList({
               key={g}
               onClick={() => setSelectedGenre(g)}
               id={`filter-genre-btn-${g.replace(/\s+/g, '-').toLowerCase()}`}
-              className={`px-4 py-2 rounded-xl text-xs font-mono tracking-wide transition-all uppercase cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer ${
                 isSelected 
-                  ? 'bg-purple-600 border border-purple-500 text-white font-bold shadow-lg shadow-purple-500/15' 
+                  ? 'bg-purple-600 border border-purple-500 text-white shadow-lg shadow-purple-500/15' 
                   : 'bg-zinc-900 border border-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-850'
               }`}
             >
@@ -77,14 +74,13 @@ export default function TrackList({
       <div className="overflow-x-auto">
         <div className="min-w-[800px] w-full text-left">
           
-          {/* Table Headline Descriptors */}
-          <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-mono text-[10px] uppercase tracking-widest font-bold">
+          {/* Table Headline Descriptors */ }
+          <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-sans text-[10px] uppercase tracking-widest font-black">
             <div className="col-span-1 text-center">Preview</div>
             <div className="col-span-4 pl-4">Title</div>
-            <div className="col-span-1 text-center">BPM</div>
-            <div className="col-span-1 text-center">Key</div>
+            <div className="col-span-2 text-center">BPM</div>
+            <div className="col-span-2 text-center">Key</div>
             <div className="col-span-3 pl-4">Tags</div>
-            <div className="col-span-2 text-right">Inquire</div>
           </div>
 
           {/* Table Beats List */}
@@ -150,12 +146,12 @@ export default function TrackList({
                     </div>
 
                     {/* BPM */}
-                    <div className="col-span-1 text-center font-mono text-zinc-300 text-xs">
+                    <div className="col-span-2 text-center font-mono text-zinc-300 text-xs">
                       {track.bpm}
                     </div>
 
                     {/* KEY */}
-                    <div className="col-span-1 text-center font-mono text-zinc-400 text-xs">
+                    <div className="col-span-2 text-center font-mono text-zinc-400 text-xs">
                       {track.key}
                     </div>
 
@@ -171,18 +167,6 @@ export default function TrackList({
                         </span>
                       ))}
                     </div>
-
-                    {/* Get License / PURCHASE Action Button */}
-                    <div className="col-span-2 text-right">
-                      <button
-                        onClick={() => onInquiryClick(track)}
-                        id={`purchase-btn-${track.id}`}
-                        className="py-2.5 px-5 rounded-xl font-mono text-[11px] font-extrabold tracking-wide uppercase transition-all bg-zinc-900 border border-zinc-800 text-white hover:text-white hover:bg-purple-600 hover:border-purple-600 cursor-pointer shadow-md inline-flex items-center"
-                      >
-                        <span>Inquire</span>
-                      </button>
-                    </div>
-
                   </motion.div>
                 );
               })
