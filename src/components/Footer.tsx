@@ -47,9 +47,9 @@ export default function Footer({ onAdminClick }: FooterProps) {
         )}
 
         <div className="flex items-center gap-1 font-sans font-bold uppercase tracking-wider">
-          <span>Engineered and synthesized with</span>
-          <Heart className="w-3 h-3 text-red-650 fill-red-650" />
-          <span>locally in browser</span>
+          <span>Forged in sonic obsidian</span>
+          <Sparkles className="w-3 h-3 text-purple-500 animate-pulse" />
+          <span>Frequency perfected</span>
         </div>
       </div>
 

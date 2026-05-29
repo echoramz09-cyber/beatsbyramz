@@ -1,6 +1,6 @@
 {
-  "name": "Beat Showcase",
-  "description": "An elite, interactive dark purple neon beat showcase for audio producers featuring Montserrat styling, live Web Audio API synth playback, real-time visualizers, and streamlined licensing inquiry forms.",
+  "name": "The Official Digital Store Of beatsbyramz",
+  "description": "The premier digital destination for high-quality instrumentals and exclusive soundscapes by beatsbyramz. Browse, preview, and license elite production across various genres.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
