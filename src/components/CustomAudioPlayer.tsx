@@ -96,7 +96,7 @@ export default function CustomAudioPlayer() {
       initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', damping: 25, stiffness: 180 }}
-      className="fixed bottom-0 left-0 right-0 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-900 px-6 py-4 z-40 shadow-2xl"
+      className="fixed bottom-0 left-0 right-0 bg-zinc-950 md:bg-zinc-950/95 md:backdrop-blur-lg border-t border-zinc-900 px-6 py-4 z-40 shadow-2xl"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         

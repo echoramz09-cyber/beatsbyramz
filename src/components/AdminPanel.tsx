@@ -294,7 +294,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Dark Ambient overlay */}
-      <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md" onClick={onClose}></div>
+      <div className="absolute inset-0 bg-zinc-950/98 md:bg-zinc-950/80 md:backdrop-blur-md" onClick={onClose}></div>
 
       {/* Main Container */}
       <motion.div 

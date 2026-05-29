@@ -33,7 +33,7 @@ export default function Header({
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="sticky top-0 z-50 bg-zinc-950/80 backdrop-blur-md border-b border-zinc-900/40 px-6 py-4 transition-all"
+      className="sticky top-0 z-50 bg-zinc-950/98 md:bg-zinc-950/80 md:backdrop-blur-md border-b border-zinc-900/40 px-6 py-4 transition-all"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         
@@ -74,7 +74,7 @@ export default function Header({
                 initial={{ opacity: 0, y: 10, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.98 }}
-                className="absolute top-full left-0 sm:left-auto sm:right-0 w-[calc(100vw-3rem)] sm:w-[400px] mt-4 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 shadow-2xl rounded-3xl overflow-hidden z-[100] p-2"
+                className="absolute top-full left-0 sm:left-auto sm:right-0 w-[calc(100vw-3rem)] sm:w-[400px] mt-4 bg-zinc-900/98 md:bg-zinc-900/95 md:backdrop-blur-xl border border-zinc-800 shadow-2xl rounded-3xl overflow-hidden z-[100] p-2"
               >
                 {searchResults.length === 0 ? (
                   <div className="px-4 py-8 text-center">
