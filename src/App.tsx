@@ -84,26 +84,26 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
       
-      {/* Immersive Background Image Layer */}
+      {/* Immersive Background Image Layer - Optimized for performance */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div 
-          className="absolute inset-0 opacity-[0.16] grayscale contrast-[1.1]"
+          className="absolute inset-0 opacity-[0.12] grayscale contrast-[1.1] will-change-transform"
           style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1598653222000-6b7b7a552625?auto=format&fit=crop&q=80&w=1920")',
+            backgroundImage: 'url("https://images.unsplash.com/photo-1598653222000-6b7b7a552625?auto=format&fit=crop&q=80&w=1280")',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}
         />
         {/* Dark Vignette Overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.85)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.88)_100%)]" />
       </div>
       
       <AnimatePresence mode="wait">
         {isLoadingTracks && <LoadingScreen key="loader" />}
       </AnimatePresence>
 
-      {/* Dynamic Ambient Background Light Leaks */}
+      {/* Dynamic Ambient Background Light Leaks - Optimized GPU layers */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         {/* Soft Pink cosmic leak top left */}
         <motion.div 
@@ -111,14 +111,15 @@ export default function App() {
             x: [-40, 60, -40],
             y: [-30, 45, -30],
             scale: [1, 1.25, 1],
-            opacity: [0.15, 0.28, 0.15],
+            opacity: [0.15, 0.22, 0.15],
           }}
           transition={{
             duration: 16,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute -top-40 -left-40 w-[450px] h-[450px] rounded-full bg-pink-500/20 blur-[120px]"
+          style={{ willChange: "transform, opacity" }}
+          className="absolute -top-40 -left-40 w-[450px] h-[450px] rounded-full bg-pink-500/15 blur-[120px]"
         />
 
         {/* Purple Space Glow Center Right */}
@@ -127,64 +128,36 @@ export default function App() {
             x: [30, -40, 30],
             y: [60, -30, 60],
             scale: [1.15, 0.9, 1.15],
-            opacity: [0.12, 0.24, 0.12],
+            opacity: [0.12, 0.20, 0.12],
           }}
           transition={{
             duration: 20,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full bg-purple-600/15 blur-[140px]"
+          style={{ willChange: "transform, opacity" }}
+          className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full bg-purple-600/10 blur-[140px]"
         />
 
-        {/* Ambient Indigo Cosmic Accent Leak Deep Center */}
-        <motion.div 
-          animate={{
-            scale: [0.85, 1.2, 0.85],
-            opacity: [0.08, 0.18, 0.08],
-          }}
-          transition={{
-            duration: 14,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-[55%] left-1/4 w-[380px] h-[380px] rounded-full bg-indigo-500/15 blur-[110px]"
-        />
-
-        {/* Soft Golden/Pink Neon Flare Bottom Left */}
-        <motion.div 
-          animate={{
-            x: [-15, 25, -15],
-            y: [15, -10, 15],
-            scale: [0.95, 1.15, 0.95],
-            opacity: [0.15, 0.25, 0.15],
-          }}
-          transition={{
-            duration: 18,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-20 -left-20 w-[420px] h-[420px] rounded-full bg-pink-400/10 blur-[130px]"
-        />
-
-        {/* Lens-flare horizontal light leak bar that slowly drifts vertically */}
+        {/* Lens-flare horizontal light leak bar */}
         <motion.div
           animate={{
             y: [-120, 1200, -120],
-            opacity: [0.03, 0.12, 0.03],
+            opacity: [0.03, 0.1, 0.03],
           }}
           transition={{
             duration: 28,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-purple-500/25 to-transparent blur-[35px]"
+          style={{ willChange: "transform, opacity" }}
+          className="absolute inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-purple-500/20 to-transparent blur-[35px]"
         />
       </div>
 
-      {/* Floating Glowing Cosmic Particles Overlay */}
+      {/* Floating Glowing Cosmic Particles Overlay - Optimized count for mobile */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
-        {COSMIC_PARTICLES.map((particle) => (
+        {COSMIC_PARTICLES.slice(0, typeof window !== 'undefined' && window.innerWidth < 768 ? 6 : 15).map((particle) => (
           <motion.div
             key={particle.id}
             initial={{ 
@@ -196,8 +169,8 @@ export default function App() {
             animate={{
               x: particle.driftX,
               y: particle.driftY,
-              opacity: [0.6, 1, 0.6],
-              scale: [0.9, 1.4, 0.9]
+              opacity: [0.5, 0.9, 0.5],
+              scale: [0.9, 1.3, 0.9]
             }}
             transition={{
               duration: particle.duration,
@@ -209,9 +182,10 @@ export default function App() {
               width: `${particle.size}px`,
               height: `${particle.size}px`,
               backgroundColor: particle.color,
-              boxShadow: `0 0 16px 4px ${particle.color}`,
+              boxShadow: `0 0 14px 3px ${particle.color}`,
               borderRadius: "50%",
-              position: "absolute"
+              position: "absolute",
+              willChange: "transform, opacity"
             }}
           />
         ))}
