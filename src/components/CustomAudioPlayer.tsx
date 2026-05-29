@@ -49,7 +49,7 @@ export default function CustomAudioPlayer() {
       
       // Redirect to Instagram DM after a short delay
       setTimeout(() => {
-        window.open('https://www.instagram.com/direct/t/beatsbyramz/', '_blank');
+        window.open('https://ig.me/m/beatsbyramz', '_blank');
       }, 1000);
     });
   };

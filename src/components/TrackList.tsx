@@ -23,6 +23,7 @@ export default function TrackList({
 }: TrackListProps) {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCopyPopup, setShowCopyPopup] = useState(false);
   const itemsPerPage = 15;
 
   // Use dynamic genres from Firebase + 'All'
@@ -148,10 +149,12 @@ export default function TrackList({
                           const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
                           
                           navigator.clipboard.writeText(info).then(() => {
-                            // Since we might not want multiple toasts, we'll just redirect
-                            // but ideally there's a visual feedback.
-                            // In this turn, let's focus on the redirect as requested.
-                            window.open('https://www.instagram.com/direct/t/beatsbyramz/', '_blank');
+                            setShowCopyPopup(true);
+                            setTimeout(() => setShowCopyPopup(false), 3000);
+                            
+                            setTimeout(() => {
+                              window.open('https://ig.me/m/beatsbyramz', '_blank');
+                            }, 1000);
                           });
                         };
 
@@ -309,6 +312,27 @@ export default function TrackList({
 
         </div>
       </div>
+
+      {/* Copy Confirmation Toast */}
+      <AnimatePresence>
+        {showCopyPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            animate={{ opacity: 1, y: -20, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={{ left: '50%', x: '-50%' }}
+            className="fixed bottom-[110px] md:bottom-[100px] z-[100] px-6 py-3 bg-zinc-900 border border-zinc-800 text-white rounded-2xl shadow-2xl flex items-center gap-3 w-[280px]"
+          >
+            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+              <Tag className="w-4 h-4" />
+            </div>
+            <div className="font-sans">
+              <p className="text-[10px] font-black text-white uppercase tracking-wider">Beat Details Copied!</p>
+              <p className="text-[10px] text-zinc-400">Paste in Instagram DMs</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 
