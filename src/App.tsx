@@ -75,9 +75,6 @@ export default function App() {
     AudioEngine.togglePlay(track);
   };
 
-  // Default trending track
-  const trendingTrack = tracks.length > 0 ? tracks[0] : null;
-
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
       
@@ -207,9 +204,9 @@ export default function App() {
         
         {/* Banner/Hero Section */}
         <Hero 
-          trendingTrack={trendingTrack}
+          topTracks={tracks.slice(0, 5)}
           isPlaying={isPlaying}
-          isPlayingTrending={!!trendingTrack && activeTrack?.id === trendingTrack.id && isPlaying}
+          activeTrackId={activeTrack?.id}
           onPlayToggle={handlePlayToggle}
         />
 
