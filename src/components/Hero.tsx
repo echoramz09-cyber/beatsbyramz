@@ -11,7 +11,7 @@ interface HeroProps {
 
 export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle }: HeroProps) {
   return (
-    <section className="relative overflow-hidden bg-zinc-950 pt-12 pb-8 px-6 border-b border-zinc-900 flex flex-col items-center text-center">
+    <section className="relative overflow-hidden bg-transparent pt-12 pb-8 px-6 border-b border-zinc-900 flex flex-col items-center text-center">
       
       {/* Decorative Neon Blur Orbs */}
       <motion.div 

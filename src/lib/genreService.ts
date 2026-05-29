@@ -9,11 +9,11 @@ export interface Genre {
 }
 
 const DEFAULT_GENRES: Genre[] = [
+  { id: 'ototoa', name: 'ototoa' },
+  { id: 'pop', name: 'Pop' },
   { id: 'trap', name: 'Trap' },
   { id: 'lofi-chill', name: 'Lofi Chill' },
   { id: 'synthwave', name: 'Synthwave' },
-  { id: 'hyperpop', name: 'Hyperpop' },
-  { id: 'hip-hop', name: 'Hip Hop' }
 ];
 
 export async function fetchGenres(): Promise<Genre[]> {

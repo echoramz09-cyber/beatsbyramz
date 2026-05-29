@@ -53,11 +53,11 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
 
   // Default Artwork mapping by genre
   const genreArtworks: Record<string, string> = {
+    'ototoa': 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=300&h=300',
+    'Pop': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=300&h=300',
     'Trap': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&q=80&w=300&h=300',
     'Lofi Chill': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=300&h=300',
     'Synthwave': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=300&h=300',
-    'Hyperpop': 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=300&h=300',
-    'Hip Hop': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&q=80&w=300&h=300'
   };
 
   useEffect(() => {
@@ -560,7 +560,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   </form>
 
                   <div className="flex-grow overflow-y-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
                       {genres.map((genre) => (
                         <div key={genre.id} className="flex items-center justify-between bg-zinc-950/40 border border-zinc-850 px-4 py-3 rounded-2xl group">
                           <span className="text-xs font-mono text-zinc-100">{genre.name}</span>
@@ -662,6 +662,25 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                           ) : (
                             <option value="Trap">Trap</option>
                           )}
+                        </select>
+                      </div>
+
+                      {/* Mood Selection */}
+                      <div>
+                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 leading-none">Primary Mood</label>
+                        <select 
+                          value={formData.mood}
+                          onChange={(e) => setFormData({ ...formData, mood: e.target.value as Track['mood'] })}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono text-zinc-300"
+                        >
+                          <option value="Dark">Dark</option>
+                          <option value="Chill">Chill</option>
+                          <option value="Energetic">Energetic</option>
+                          <option value="Inspiring">Inspiring</option>
+                          <option value="Hypnotic">Hypnotic</option>
+                          <option value="Happy">Happy</option>
+                          <option value="Sad">Sad</option>
+                          <option value="Intense">Intense</option>
                         </select>
                       </div>
 

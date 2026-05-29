@@ -84,6 +84,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
       
+      {/* Immersive Background Image Layer */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div 
+          className="absolute inset-0 opacity-[0.16] grayscale contrast-[1.1]"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1598653222000-6b7b7a552625?auto=format&fit=crop&q=80&w=1920")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+        {/* Dark Vignette Overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.85)_100%)]" />
+      </div>
+      
       <AnimatePresence mode="wait">
         {isLoadingTracks && <LoadingScreen key="loader" />}
       </AnimatePresence>
@@ -181,8 +196,8 @@ export default function App() {
             animate={{
               x: particle.driftX,
               y: particle.driftY,
-              opacity: [0.4, 0.95, 0.4],
-              scale: [0.8, 1.3, 0.8]
+              opacity: [0.6, 1, 0.6],
+              scale: [0.9, 1.4, 0.9]
             }}
             transition={{
               duration: particle.duration,
@@ -194,7 +209,7 @@ export default function App() {
               width: `${particle.size}px`,
               height: `${particle.size}px`,
               backgroundColor: particle.color,
-              boxShadow: `0 0 12px 3px ${particle.color}`,
+              boxShadow: `0 0 16px 4px ${particle.color}`,
               borderRadius: "50%",
               position: "absolute"
             }}
@@ -203,7 +218,14 @@ export default function App() {
       </div>
 
       {/* Upper Navigation Header */}
-      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <Header 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery} 
+        tracks={tracks}
+        isPlaying={isPlaying}
+        activeTrackId={activeTrack?.id}
+        onPlayToggle={handlePlayToggle}
+      />
 
       {/* Main Core Body */}
       <main className="flex-grow pb-12 relative z-10">
@@ -224,7 +246,6 @@ export default function App() {
           activeTrackId={activeTrack?.id}
           isPlaying={isPlaying}
           searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
         />
 
       </main>

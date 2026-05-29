@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Track } from '../types';
 import { Genre } from '../lib/genreService';
-import { Play, Pause, Search, Tag, Music, SlidersHorizontal, Headphones } from 'lucide-react';
+import { Play, Pause, Tag, Music, Headphones } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface TrackListProps {
@@ -11,7 +11,6 @@ interface TrackListProps {
   activeTrackId: string | undefined;
   isPlaying: boolean;
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
 }
 
 export default function TrackList({ 
@@ -20,15 +19,14 @@ export default function TrackList({
   onPlayToggle, 
   activeTrackId, 
   isPlaying,
-  searchQuery,
-  setSearchQuery
+  searchQuery
 }: TrackListProps) {
   const [selectedGenre, setSelectedGenre] = useState('All');
 
   // Use dynamic genres from Firebase + 'All'
   const genreFilters = ['All', ...genresList.map(g => g.name)];
 
-  // Filtering Logic
+  // Filtering Logic for the main list
   const filteredTracks = tracks.filter(track => {
     const matchesSearch = track.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           track.genre.toLowerCase().includes(searchQuery.toLowerCase()) ||

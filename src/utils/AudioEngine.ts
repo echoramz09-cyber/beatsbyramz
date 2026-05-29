@@ -166,13 +166,29 @@ class AudioEngineClass {
           targetUrl = 'https://' + targetUrl;
         }
 
+        if (!targetUrl || targetUrl.length < 5) {
+          console.error("AudioEngine: Invalid beatUrl found for track:", {
+            id: this.currentTrack.id,
+            title: this.currentTrack.title,
+            url: targetUrl
+          });
+          this.pause();
+          return;
+        }
+
         if (this.audioEl.src !== targetUrl) {
+          console.log("AudioEngine: Loading source", targetUrl, "for track:", this.currentTrack.title);
           this.audioEl.src = targetUrl;
           this.audioEl.load();
         }
         
         this.audioEl.play().catch(err => {
-          console.error("Audio playback error:", err);
+          console.error("AudioEngine Playback Failed:", {
+            error: err.message || err,
+            trackId: this.currentTrack?.id,
+            trackTitle: this.currentTrack?.title,
+            url: targetUrl
+          });
         });
       }
       this.isRunning = true;

@@ -11,7 +11,7 @@ export interface Track {
   priceUnlimited: number;
   duration: string;
   artwork: string;
-  mood: 'Dark' | 'Chill' | 'Energetic' | 'Inspiring' | 'Hypnotic';
+  mood: 'Dark' | 'Chill' | 'Energetic' | 'Inspiring' | 'Hypnotic' | 'Happy' | 'Sad' | 'Intense';
   beatUrl?: string;
   createdAt?: string;
   updatedAt?: string;
