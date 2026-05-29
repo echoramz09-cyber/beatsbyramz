@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, MouseEvent } from 'react';
 import { Track } from '../types';
 import { Genre } from '../lib/genreService';
 import { Play, Pause, Tag, Music, Headphones, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -104,9 +104,10 @@ export default function TrackList({
           {/* Table Headline Descriptors */ }
           <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-sans text-[10px] uppercase tracking-widest font-black">
             <div className="col-span-1 text-center">Preview</div>
-            <div className="col-span-4 pl-4">Title</div>
+            <div className="col-span-3 pl-4">Title</div>
             <div className="col-span-2 text-center">BPM • Time</div>
-            <div className="col-span-2 text-center">Key</div>
+            <div className="col-span-1 text-center">Key</div>
+            <div className="col-span-2 text-center">Action</div>
             <div className="col-span-3 pl-4">Tags</div>
           </div>
 
@@ -141,6 +142,18 @@ export default function TrackList({
                       {groupedTracks[genre].map((track) => {
                         const isActive = activeTrackId === track.id;
                         const isPlayingRow = isActive && isPlaying;
+
+                        const handleRowBuyNow = (e: MouseEvent) => {
+                          e.stopPropagation();
+                          const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
+                          
+                          navigator.clipboard.writeText(info).then(() => {
+                            // Since we might not want multiple toasts, we'll just redirect
+                            // but ideally there's a visual feedback.
+                            // In this turn, let's focus on the redirect as requested.
+                            window.open('https://www.instagram.com/direct/t/beatsbyramz/', '_blank');
+                          });
+                        };
 
                         return (
                           <motion.div
@@ -186,7 +199,7 @@ export default function TrackList({
                             </div>
 
                             {/* Title & Tagline, etc. */}
-                            <div className="col-span-4 pl-4 min-w-0">
+                            <div className="col-span-3 pl-4 min-w-0">
                               <h4 className="text-white text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
                               <p className="text-[11px] text-zinc-500 font-sans truncate mt-0.5">{track.tagline}</p>
                             </div>
@@ -197,8 +210,19 @@ export default function TrackList({
                             </div>
 
                             {/* KEY */}
-                            <div className="col-span-2 text-center font-mono text-zinc-400 text-xs">
+                            <div className="col-span-1 text-center font-mono text-zinc-400 text-xs">
                               {track.key}
+                            </div>
+
+                            {/* BUY BUTTON (New) */}
+                            <div className="col-span-2 flex justify-center">
+                              <button
+                                onClick={handleRowBuyNow}
+                                className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-black text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all uppercase tracking-widest flex items-center gap-2 group/buy"
+                              >
+                                <Tag className="w-3 h-3 group-hover/buy:text-purple-500 transition-colors" />
+                                Buy
+                              </button>
                             </div>
 
                             {/* TAGS */}

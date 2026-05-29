@@ -2,8 +2,8 @@ import { useEffect, useState, useRef, ChangeEvent } from 'react';
 import { Track } from '../types';
 import AudioEngine from '../utils/AudioEngine';
 import AudioVisualizer from './AudioVisualizer';
-import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio, Tag } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface CustomAudioPlayerProps {}
 
@@ -19,6 +19,8 @@ export default function CustomAudioPlayer() {
   const [previousVolume, setPreviousVolume] = useState(0.8);
   const [isLooping, setIsLooping] = useState(true); // Loop by default since it plays continuous beautiful retro beats
 
+  const [showCopyPopup, setShowCopyPopup] = useState(false);
+
   // Hook into AudioEngine state triggers
   useEffect(() => {
     const handleStateChange = (state: any) => {
@@ -33,6 +35,24 @@ export default function CustomAudioPlayer() {
     const unsubscribe = AudioEngine.subscribe(handleStateChange);
     return () => unsubscribe();
   }, []);
+
+  const handleBuyNow = () => {
+    if (!playerState.currentTrack) return;
+    
+    const track = playerState.currentTrack;
+    const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(info).then(() => {
+      setShowCopyPopup(true);
+      setTimeout(() => setShowCopyPopup(false), 3000);
+      
+      // Redirect to Instagram DM after a short delay
+      setTimeout(() => {
+        window.open('https://www.instagram.com/direct/t/beatsbyramz/', '_blank');
+      }, 1000);
+    });
+  };
 
   const { isPlaying, currentTrack, volume, progress } = playerState;
 
@@ -199,11 +219,19 @@ export default function CustomAudioPlayer() {
           </div>
         </div>
 
-        {/* Right Section: Volume */}
+        {/* Right Section: Volume & License Action */}
         <div className="flex items-center justify-end gap-4 w-full md:w-1/3">
           
+          <button 
+            onClick={handleBuyNow}
+            className="flex-1 md:flex-none flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans font-black text-[11px] uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all active:scale-95"
+          >
+            <Tag className="w-4 h-4 fill-white" />
+            Buy Now
+          </button>
+
           {/* Volume Control */}
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             <button 
               onClick={handleMuteToggle}
               className="text-zinc-400 hover:text-white transition-colors"
@@ -224,6 +252,27 @@ export default function CustomAudioPlayer() {
         </div>
 
       </div>
+      {/* Copy Confirmation Toast */}
+      <AnimatePresence>
+        {showCopyPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            animate={{ opacity: 1, y: -20, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={{ left: '50%', x: '-50%' }}
+            className="fixed bottom-[110px] md:bottom-[100px] z-[100] px-6 py-3 bg-zinc-900 border border-zinc-800 text-white rounded-2xl shadow-2xl flex items-center gap-3 w-[280px]"
+          >
+            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+              <Tag className="w-4 h-4" />
+            </div>
+            <div className="font-sans">
+              <p className="text-[10px] font-black text-white uppercase tracking-wider">Beat Details Copied!</p>
+              <p className="text-[10px] text-zinc-400">Paste in Instagram DMs</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </motion.div>
   );
 }
