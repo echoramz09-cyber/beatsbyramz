@@ -223,23 +223,19 @@ export default function TrackList({
             )}
           </div>
 
-          {/* Pagination Controls */}
+          {/* Mobile-Optimized Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-12 py-6 border-t border-zinc-900">
-              <div className="text-[10px] text-zinc-600 font-mono uppercase tracking-[0.2em]">
-                Showing <span className="text-zinc-300">{startIndex + 1}</span> - <span className="text-zinc-300">{Math.min(startIndex + itemsPerPage, filteredTracks.length)}</span> of <span className="text-zinc-300">{filteredTracks.length}</span> instrumentals
-              </div>
-              
+            <div className="flex flex-col items-center mt-12 py-10 border-t border-zinc-900 gap-8">
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="p-2.5 rounded-xl border border-zinc-900 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-300 hover:text-white hover:bg-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl active:scale-90"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-5 h-5" />
                 </button>
                 
-                <div className="flex items-center gap-1.5 mx-2">
+                <div className="flex items-center gap-2 mx-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
                     // Only show first, last, and pages near current
                     if (
@@ -251,10 +247,10 @@ export default function TrackList({
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`w-9 h-9 rounded-xl text-[10px] font-mono font-black border transition-all ${
+                          className={`w-10 h-10 rounded-2xl text-xs font-mono font-black border transition-all ${
                             currentPage === pageNum
-                              ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-500/20'
-                              : 'bg-zinc-950 border-zinc-900 text-zinc-500 hover:text-white hover:bg-zinc-900'
+                              ? 'bg-purple-600 border-purple-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.3)]'
+                              : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:text-white hover:bg-zinc-850'
                           }`}
                         >
                           {pageNum}
@@ -264,7 +260,7 @@ export default function TrackList({
                       pageNum === currentPage - 2 || 
                       pageNum === currentPage + 2
                     ) {
-                      return <span key={pageNum} className="text-zinc-700 font-mono text-[10px]">...</span>;
+                      return <span key={pageNum} className="text-zinc-700 font-mono text-xs px-1">...</span>;
                     }
                     return null;
                   })}
@@ -273,10 +269,16 @@ export default function TrackList({
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="p-2.5 rounded-xl border border-zinc-900 bg-zinc-950 text-zinc-400 hover:text-white hover:bg-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  className="p-3.5 rounded-2xl border border-zinc-800 bg-zinc-950 text-zinc-300 hover:text-white hover:bg-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xl active:scale-90"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-5 h-5" />
                 </button>
+              </div>
+
+              <div className="text-[11px] text-zinc-500 font-mono uppercase tracking-[0.25em] flex items-center gap-3">
+                <div className="w-8 h-px bg-zinc-900" />
+                <span>Page <span className="text-purple-400 font-black">{currentPage}</span> / {totalPages}</span>
+                <div className="w-8 h-px bg-zinc-900" />
               </div>
             </div>
           )}

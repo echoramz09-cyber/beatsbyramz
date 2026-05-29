@@ -82,7 +82,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative">
       
       {/* Immersive Background Image Layer - Optimized for performance */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -202,7 +202,7 @@ export default function App() {
       />
 
       {/* Main Core Body */}
-      <main className="flex-grow pb-12 relative z-10">
+      <main className="flex-grow pt-20 pb-12 relative z-10">
         
         {/* Banner/Hero Section */}
         <Hero 

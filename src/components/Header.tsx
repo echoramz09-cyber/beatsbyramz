@@ -33,7 +33,7 @@ export default function Header({
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="sticky top-0 z-50 bg-zinc-950/98 md:bg-zinc-950/80 md:backdrop-blur-md border-b border-zinc-900/40 px-6 py-4 transition-all"
+      className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/98 md:bg-zinc-950/80 md:backdrop-blur-md border-b border-zinc-900/40 px-6 py-4 transition-all"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         

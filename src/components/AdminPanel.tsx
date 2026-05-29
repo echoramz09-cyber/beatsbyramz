@@ -30,6 +30,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   const [activeFormTab, setActiveFormTab] = useState<'list' | 'add' | 'edit' | 'genres'>('list');
   const [selectedBeat, setSelectedBeat] = useState<Track | null>(null);
   const [adminGenreFilter, setAdminGenreFilter] = useState('All');
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Genre management state
   const [newGenreName, setNewGenreName] = useState('');
@@ -208,15 +209,23 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
     setActiveFormTab('add');
   };
 
-  const handleDeleteClick = async (id: string) => {
-    if (confirm('Are you strictly sure you want to delete this beat from the server? This action is irreversible.')) {
-      try {
-        await deleteBeat(id);
-        await loadBeats();
-        onCatalogRefresh();
-      } catch (err) {
-        alert('Deletion failed due to rules check.');
-      }
+  const handleDeleteClick = (id: string) => {
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    
+    setIsSubmitting(true);
+    try {
+      await deleteBeat(deleteConfirmId);
+      await loadBeats();
+      onCatalogRefresh();
+      setDeleteConfirmId(null);
+    } catch (err) {
+      alert('Deletion failed. Please check network connectivity.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -802,6 +811,50 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
           </div>
         )}
       </motion.div>
+
+      {/* Custom Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirmId && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteConfirmId(null)}
+              className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl z-10"
+            >
+              <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
+                <Trash2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold font-sans tracking-tight text-white mb-2">Delete Instrumental?</h3>
+              <p className="text-sm text-zinc-400 font-sans leading-relaxed mb-8">
+                Are you strictly sure you want to delete this beat from the server? This action is <span className="text-rose-400 font-bold">irreversible</span>.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirmId(null)}
+                  className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs uppercase tracking-wider transition-all"
+                >
+                  No, Keep It
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-rose-900/20 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Purging...' : 'Yes, Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
