@@ -46,12 +46,12 @@ export default function Header({
         </div>
 
         {/* Right side Search Input */}
-        <div className="relative w-40 sm:w-80 group">
+        <div className="relative w-full max-w-[200px] sm:max-w-xs group ml-4">
           <div className="relative">
             <Search className="w-4 h-4 text-zinc-550 absolute left-3 top-2.5 group-focus-within:text-purple-500 transition-colors" />
             <input
               type="text"
-              placeholder="Search beats..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-900 focus:bg-zinc-900/60 hover:bg-zinc-850 text-xs pl-9 pr-8 py-2.5 border border-zinc-800 focus:border-purple-500 rounded-xl text-white placeholder-zinc-500 focus:outline-none transition-all font-sans"

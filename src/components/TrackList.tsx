@@ -86,7 +86,7 @@ export default function TrackList({
                 key={g}
                 onClick={() => setSelectedGenre(g)}
                 id={`filter-genre-btn-${g.replace(/\s+/g, '-').toLowerCase()}`}
-                className={`px-4 py-2 rounded-xl text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer ${
+                className={`px-3 py-2 md:px-4 md:py-2 rounded-xl text-[9px] md:text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer ${
                   isSelected 
                     ? 'bg-purple-600 border border-purple-500 text-white shadow-lg shadow-purple-500/15' 
                     : 'bg-zinc-900 border border-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-850'
@@ -99,156 +99,162 @@ export default function TrackList({
         </div>
 
       {/* Catalog Render Table */}
-      <div className="overflow-x-auto">
-        <div className="min-w-[800px] w-full text-left">
-          
-          {/* Table Headline Descriptors */ }
-          <div className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-sans text-[10px] uppercase tracking-widest font-black">
-            <div className="col-span-1 text-center">Preview</div>
-            <div className="col-span-3 pl-4">Title</div>
-            <div className="col-span-2 text-center">BPM • Time</div>
-            <div className="col-span-1 text-center">Key</div>
-            <div className="col-span-2 text-center">Action</div>
-            <div className="col-span-3 pl-4">Tags</div>
-          </div>
+      <div className="w-full">
+        
+        {/* Table Headline Descriptors - Desktop Only */ }
+        <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-sans text-[10px] uppercase tracking-widest font-black">
+          <div className="col-span-1 text-center">Preview</div>
+          <div className="col-span-3 pl-4">Title</div>
+          <div className="col-span-2 text-center">BPM • Time</div>
+          <div className="col-span-1 text-center">Key</div>
+          <div className="col-span-2 text-center">Buy Now</div>
+          <div className="col-span-3 pl-4">Tags</div>
+        </div>
 
-          {/* Table Beats List grouped by Genre */}
-          <div className="divide-y divide-zinc-900/10 mt-1 min-h-[400px]">
-            {filteredTracks.length === 0 ? (
-              <div className="py-16 text-center text-zinc-550 border border-dashed border-zinc-900 rounded-3xl mt-4">
-                <Music className="w-10 h-10 mx-auto text-zinc-650 mb-3" />
-                <p className="text-zinc-400 font-semibold font-sans">No matching instrumentals found</p>
-                <p className="text-[11px] text-zinc-550 font-mono mt-1">Try tweaking your filters or adjusting your tags query.</p>
-              </div>
-            ) : (
-              <AnimatePresence mode="popLayout">
-                {genresToRender.map((genre) => (
-                  <motion.div 
-                    key={`${genre}-${currentPage}`}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className={selectedGenre === 'All' ? 'py-1' : 'py-4'}
-                  >
-                    {/* Category Header - Hidden when 'All' is selected, unless it's just one genre filter */}
-                    {selectedGenre !== 'All' && (
-                      <div className="px-4 py-3 bg-zinc-900/20 rounded-xl mb-2 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
-                        <h3 className="text-[10px] font-sans font-black text-zinc-400 uppercase tracking-[0.2em]">{genre}</h3>
-                        <span className="text-[9px] text-zinc-650 font-mono">({filteredTracks.filter(t => t.genre === genre).length} total)</span>
-                      </div>
-                    )}
+        {/* Beats List */}
+        <div className="divide-y divide-zinc-900/10 mt-1 min-h-[400px]">
+          {filteredTracks.length === 0 ? (
+            <div className="py-16 text-center text-zinc-550 border border-dashed border-zinc-900 rounded-3xl mt-4">
+              <Music className="w-10 h-10 mx-auto text-zinc-650 mb-3" />
+              <p className="text-zinc-400 font-semibold font-sans">No matching instrumentals found</p>
+              <p className="text-[11px] text-zinc-550 font-mono mt-1">Try tweaking your filters or adjusting your tags query.</p>
+            </div>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {genresToRender.map((genre) => (
+                <motion.div 
+                  key={`${genre}-${currentPage}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className={selectedGenre === 'All' ? 'py-1' : 'py-4'}
+                >
+                  {/* Category Header */}
+                  {selectedGenre !== 'All' && (
+                    <div className="px-4 py-3 bg-zinc-900/20 rounded-xl mb-4 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+                      <h3 className="text-[10px] font-sans font-black text-zinc-400 uppercase tracking-[0.2em]">{genre}</h3>
+                      <span className="text-[9px] text-zinc-650 font-mono">({filteredTracks.filter(t => t.genre === genre).length} total)</span>
+                    </div>
+                  )}
 
-                    <div className="space-y-1">
-                      {groupedTracks[genre].map((track) => {
-                        const isActive = activeTrackId === track.id;
-                        const isPlayingRow = isActive && isPlaying;
+                  <div className="grid grid-cols-1 md:block gap-4">
+                    {groupedTracks[genre].map((track) => {
+                      const isActive = activeTrackId === track.id;
+                      const isPlayingRow = isActive && isPlaying;
 
-                        const handleRowBuyNow = (e: MouseEvent) => {
-                          e.stopPropagation();
-                          const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
+                      const handleRowBuyNow = (e: MouseEvent) => {
+                        e.stopPropagation();
+                        const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
+                        
+                        navigator.clipboard.writeText(info).then(() => {
+                          setShowCopyPopup(true);
+                          setTimeout(() => setShowCopyPopup(false), 3000);
                           
-                          navigator.clipboard.writeText(info).then(() => {
-                            setShowCopyPopup(true);
-                            setTimeout(() => setShowCopyPopup(false), 3000);
-                            
-                            setTimeout(() => {
-                              window.open('https://ig.me/m/beatsbyramz', '_blank');
-                            }, 1000);
-                          });
-                        };
+                          setTimeout(() => {
+                            window.open('https://ig.me/m/beatsbyramz', '_blank');
+                          }, 1000);
+                        });
+                      };
 
-                        return (
-                          <motion.div
-                            key={track.id}
-                            layout
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.35, ease: 'easeOut' }}
-                            className={`grid grid-cols-12 gap-4 items-center px-4 py-4 rounded-2xl hover:bg-zinc-900/40 transition-colors border border-transparent hover:border-zinc-900/40 group ${
-                              isActive ? 'bg-zinc-900/30 border-zinc-900' : ''
-                            }`}
-                          >
-                            {/* Visualizer and Play buttons */}
-                            <div className="col-span-1 flex justify-center">
-                              <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 flex-shrink-0">
+                      return (
+                        <motion.div
+                          key={track.id}
+                          layout
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.35, ease: 'easeOut' }}
+                          onClick={() => onPlayToggle(track)}
+                          className={`flex flex-col md:grid md:grid-cols-12 gap-4 items-start md:items-center px-5 py-5 md:px-4 md:py-4 rounded-3xl md:rounded-2xl hover:bg-zinc-900/40 transition-colors border border-zinc-900/50 md:border-transparent hover:border-zinc-800/50 group cursor-pointer ${
+                            isActive ? 'bg-zinc-900/40 border-zinc-800 ring-1 ring-zinc-800/50' : 'bg-zinc-950/20'
+                          }`}
+                        >
+                          {/* Top Section: Artwork & Title (Mobile Only) */}
+                          <div className="flex items-center gap-4 w-full md:contents">
+                            {/* Artwork */}
+                            <div className="md:col-span-1 flex justify-center flex-shrink-0">
+                              <div className="relative w-16 h-16 md:w-12 md:h-12 rounded-2xl md:rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950 flex-shrink-0">
                                 <img 
                                   src={track.artwork} 
                                   alt={track.title} 
                                   className="w-full h-full object-cover transition-opacity duration-300 group-hover:opacity-30"
                                   referrerPolicy="no-referrer"
                                 />
-                                <button
-                                  onClick={() => onPlayToggle(track)}
-                                  id={`row-play-btn-${track.id}`}
-                                  className="absolute inset-0 m-auto flex items-center justify-center bg-transparent group-hover:bg-black/40 text-white transition-all rounded-full cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100"
-                                  aria-label={isPlayingRow ? "Pause" : "Play"}
+                                <div
+                                  className={`absolute inset-0 m-auto flex items-center justify-center bg-black/20 md:bg-transparent md:group-hover:bg-black/40 text-white transition-all rounded-full ${isPlayingRow ? 'opacity-100' : 'opacity-100 md:opacity-0 group-hover:opacity-100'}`}
                                 >
                                   {isPlayingRow ? (
-                                    <Pause className="w-4 h-4 fill-white animate-pulse" />
+                                    <Pause className="w-5 h-5 md:w-4 md:h-4 fill-white animate-pulse" />
                                   ) : (
-                                    <Play className="w-4 h-4 fill-white translate-x-0.5" />
+                                    <Play className="w-5 h-5 md:w-4 md:h-4 fill-white translate-x-0.5" />
                                   )}
-                                </button>
+                                </div>
 
                                 {isPlayingRow && (
-                                  <div className="absolute inset-0 bg-purple-900/50 flex gap-0.5 items-end justify-center pb-2.5 group-hover:opacity-0 pointer-events-none transition-opacity">
-                                    <span className="w-1.0 bg-white animate-[bounce_0.8s_infinite] h-4"></span>
-                                    <span className="w-1.0 bg-white animate-[bounce_0.5s_infinite_0.15s] h-6"></span>
-                                    <span className="w-1.0 bg-white animate-[bounce_0.7s_infinite_0.3s] h-3"></span>
+                                  <div className="absolute inset-0 bg-purple-900/50 flex gap-0.5 items-end justify-center pb-3 md:pb-2.5 group-hover:opacity-0 pointer-events-none transition-opacity">
+                                    <span className="w-1 bg-white animate-[bounce_0.8s_infinite] h-4"></span>
+                                    <span className="w-1 bg-white animate-[bounce_0.5s_infinite_0.15s] h-6"></span>
+                                    <span className="w-1 bg-white animate-[bounce_0.7s_infinite_0.3s] h-3"></span>
                                   </div>
                                 )}
                               </div>
                             </div>
 
-                            {/* Title & Tagline, etc. */}
-                            <div className="col-span-3 pl-4 min-w-0">
-                              <h4 className="text-white text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
-                              <p className="text-[11px] text-zinc-500 font-sans truncate mt-0.5">{track.tagline}</p>
+                            {/* Title & Info */}
+                            <div className="md:col-span-3 pl-0 md:pl-4 flex-grow min-w-0">
+                              <h4 className="text-white text-base md:text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
+                              <p className="text-xs md:text-[11px] text-zinc-500 font-sans truncate mt-1 md:mt-0.5">{track.tagline}</p>
+                              
+                              {/* Metadata Row (Mobile Only) */}
+                              <div className="flex md:hidden items-center gap-3 mt-2 text-[10px] font-mono text-zinc-400">
+                                <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.bpm} BPM</span>
+                                <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.key}</span>
+                                <span>{track.duration}</span>
+                              </div>
                             </div>
+                          </div>
 
-                            {/* BPM & Time */}
-                            <div className="col-span-2 text-center font-mono text-zinc-300 text-xs">
-                              {track.bpm} <span className="text-zinc-650 px-1">•</span> {track.duration}
-                            </div>
+                          {/* Desktop Metadata Columns */}
+                          <div className="hidden md:block md:col-span-2 text-center font-mono text-zinc-300 text-xs">
+                            {track.bpm} <span className="text-zinc-650 px-1">•</span> {track.duration}
+                          </div>
 
-                            {/* KEY */}
-                            <div className="col-span-1 text-center font-mono text-zinc-400 text-xs">
-                              {track.key}
-                            </div>
+                          <div className="hidden md:block md:col-span-1 text-center font-mono text-zinc-400 text-xs">
+                            {track.key}
+                          </div>
 
-                            {/* BUY BUTTON (New) */}
-                            <div className="col-span-2 flex justify-center">
-                              <button
-                                onClick={handleRowBuyNow}
-                                className="px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-[10px] font-mono font-black text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all uppercase tracking-widest flex items-center gap-2 group/buy"
+                          {/* Action Button */}
+                          <div className="md:col-span-2 w-full md:w-auto md:flex md:justify-center">
+                            <button
+                              onClick={handleRowBuyNow}
+                              className="w-full md:w-auto px-6 py-3.5 md:px-4 md:py-2 rounded-2xl md:rounded-xl bg-purple-600 md:bg-zinc-900 border border-purple-500/30 md:border-zinc-800 text-[11px] md:text-[10px] font-sans md:font-mono font-black text-white md:text-zinc-400 hover:text-white hover:bg-purple-500 md:hover:bg-zinc-800 transition-all uppercase tracking-widest flex items-center justify-center gap-2.5 group/buy active:scale-95 shadow-lg shadow-purple-500/10 md:shadow-none"
+                            >
+                              <Tag className="w-4 h-4 md:w-3 md:h-3 group-hover/buy:text-white md:group-hover/buy:text-purple-500 transition-colors" />
+                              Buy Now
+                            </button>
+                          </div>
+
+                          {/* TAGS - Scrollable on mobile if needed, though card is better */}
+                          <div className="md:col-span-3 pl-0 md:pl-4 flex flex-wrap gap-1.5 overflow-hidden w-full">
+                            {track.tags.map(tag => (
+                              <span 
+                                key={tag}
+                                className="text-[9px] font-mono font-bold tracking-wide bg-zinc-900/50 group-hover:bg-zinc-850 hover:text-white transition-colors text-zinc-500 border border-zinc-800/50 px-2.5 py-1 rounded-full flex items-center gap-1"
                               >
-                                <Tag className="w-3 h-3 group-hover/buy:text-purple-500 transition-colors" />
-                                Buy
-                              </button>
-                            </div>
-
-                            {/* TAGS */}
-                            <div className="col-span-3 pl-4 flex flex-wrap gap-1.5 overflow-hidden">
-                              {track.tags.map(tag => (
-                                <span 
-                                  key={tag}
-                                  className="text-[9px] font-mono font-medium tracking-wide bg-zinc-900 group-hover:bg-zinc-850 hover:text-white transition-colors text-zinc-400 border border-zinc-800 px-2 py-0.5 rounded-full flex items-center gap-0.5"
-                                >
-                                  <Tag className="w-2 h-2 text-zinc-550" />
-                                  {tag}
-                                </span>
-                              ))}
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            )}
-          </div>
+                                <Tag className="w-2.5 h-2.5 text-zinc-600" />
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          )}
+        </div>
 
           {/* Mobile-Optimized Pagination Controls */}
           {totalPages > 1 && (
@@ -311,7 +317,6 @@ export default function TrackList({
           )}
 
         </div>
-      </div>
 
       {/* Copy Confirmation Toast */}
       <AnimatePresence>

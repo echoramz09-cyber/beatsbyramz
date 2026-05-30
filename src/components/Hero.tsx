@@ -11,17 +11,17 @@ interface HeroProps {
 
 export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle }: HeroProps) {
   return (
-    <section className="relative overflow-hidden bg-transparent pt-12 pb-8 px-6 border-b border-zinc-900 flex flex-col items-center text-center">
+    <section className="relative overflow-hidden bg-transparent pt-8 md:pt-12 pb-6 md:pb-8 px-4 md:px-6 border-b border-zinc-900 flex flex-col items-center text-center">
       
       {/* Decorative Neon Blur Orbs */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1.5, ease: 'easeOut' }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-purple-600/5 blur-3xl -z-10" 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 md:w-80 h-64 md:h-80 rounded-full bg-purple-600/5 blur-3xl -z-10" 
       />
 
-      <div className="max-w-6xl mx-auto space-y-8 w-full flex flex-col items-center">
+      <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 w-full flex flex-col items-center">
         
         {/* Title Browse */}
         <motion.div 
@@ -30,7 +30,7 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
           transition={{ duration: 0.7, ease: 'easeOut' }}
           className="space-y-1"
         >
-          <h2 className="text-4xl sm:text-7xl font-sans font-black tracking-tight leading-tight uppercase">
+          <h2 className="text-3xl sm:text-7xl font-sans font-black tracking-tight leading-tight uppercase">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 px-2">Top Beats</span>
           </h2>
         </motion.div>
