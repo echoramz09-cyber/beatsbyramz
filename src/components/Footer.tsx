@@ -31,24 +31,24 @@ export default function Footer({ onAdminClick }: FooterProps) {
       {/* Base footer lines */}
       <div className="max-w-7xl mx-auto px-6 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-zinc-650 text-[10px] font-sans font-bold uppercase tracking-wider">
         <div className="flex items-center gap-1.5 font-sans font-bold">
-          <Radio className="w-3.5 h-3.5 text-purple-600 animate-pulse" />
-          <span>© 2026 beatsbyramz. All licensing rights reserved.</span>
+          <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+          <span>© 2026 craxx. All licensing rights reserved.</span>
         </div>
 
         {onAdminClick && (
           <button 
             type="button" 
             onClick={onAdminClick}
-            className="flex items-center gap-1.5 hover:text-purple-400 transition-colors cursor-pointer group"
+            className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer group"
           >
-            <Shield className="w-3.5 h-3.5 text-purple-600 group-hover:text-purple-400 transition-colors" />
+            <Shield className="w-3.5 h-3.5 text-amber-500 group-hover:text-amber-400 transition-colors" />
             <span>Admin Portal</span>
           </button>
         )}
 
         <div className="flex items-center gap-1 font-sans font-bold uppercase tracking-wider">
           <span>Forged in sonic obsidian</span>
-          <Sparkles className="w-3 h-3 text-purple-500 animate-pulse" />
+          <Sparkles className="w-3 h-3 text-amber-400 animate-pulse" />
           <span>Frequency perfected</span>
         </div>
       </div>

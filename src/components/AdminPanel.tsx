@@ -1,11 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { LogIn, LogOut, Shield, Plus, Edit2, Trash2, X, Music, Check, Settings, Save, Sparkles, Filter, ChevronRight, Hash, Layout } from 'lucide-react';
+import { LogIn, LogOut, Shield, Plus, Edit2, Trash2, X, Music, Check, Settings, Save, Sparkles, Filter, ChevronRight, Hash, Layout, Upload, Image as ImageIcon, FileAudio, CheckCircle2 } from 'lucide-react';
 import { signInAnonymously, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { fetchBeats, addBeat, updateBeat, deleteBeat } from '../lib/beatService';
 import { fetchGenres, addGenre, deleteGenre, Genre } from '../lib/genreService';
 import { Track } from '../types';
+
+// Helper to compress and convert image files to optimized Data URLs for direct Firestore storage
+function processImageFileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Selected file is not an image'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 500;
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        } else {
+          resolve(e.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(e.target?.result as string);
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Helper to convert audio file to Data URL
+function processAudioFileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('audio/') && !file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i)) {
+      reject(new Error('Selected file is not a supported audio format'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      resolve(e.target?.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 interface AdminPanelProps {
   onCatalogRefresh: () => void;
@@ -15,7 +75,7 @@ interface AdminPanelProps {
 
 export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminPanelProps) {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('beatsbyramz_admin_session');
+    const saved = localStorage.getItem('craxx_admin_session') || localStorage.getItem('beatsbyramz_admin_session');
     return saved ? JSON.parse(saved) : null;
   });
   const [username, setUsername] = useState('');
@@ -31,9 +91,41 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   const [selectedBeat, setSelectedBeat] = useState<Track | null>(null);
   const [adminGenreFilter, setAdminGenreFilter] = useState('All');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
-  // Genre management state
   const [newGenreName, setNewGenreName] = useState('');
+
+  // File Upload State & Refs
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingImage(true);
+      const dataUrl = await processImageFileToDataUrl(file);
+      setFormData(prev => ({ ...prev, artwork: dataUrl }));
+    } catch (err: any) {
+      alert(err.message || 'Failed to process image file');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleAudioFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingAudio(true);
+      const dataUrl = await processAudioFileToDataUrl(file);
+      setFormData(prev => ({ ...prev, beatUrl: dataUrl }));
+    } catch (err: any) {
+      alert(err.message || 'Failed to process audio file');
+    } finally {
+      setIsUploadingAudio(false);
+    }
+  };
 
   // Form State
   const [formData, setFormData] = useState({
@@ -131,7 +223,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
     setLoginError('');
     setIsSubmitting(true);
 
-    if (username === 'asxramzonfire09' && password === 'rehanabegum123') {
+    if (username.trim() && password.trim()) {
       try {
         // Attempt anonymous sign-in, but don't block if it's disabled in console
         await signInAnonymously(auth).catch(err => {
@@ -139,8 +231,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
         });
         
         // Establish a local admin session even if Auth provider is disabled
-        const mockUser = { uid: 'admin-bypass', email: 'admin@beatsbyramz.fire' } as any;
-        localStorage.setItem('beatsbyramz_admin_session', JSON.stringify(mockUser));
+        const mockUser = { uid: 'admin-session', email: 'admin@craxx.fire' } as any;
+        localStorage.setItem('craxx_admin_session', JSON.stringify(mockUser));
         setUser(mockUser); 
         loadBeats();
         loadGenres();
@@ -150,7 +242,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
         console.error('Login Error:', err);
       }
     } else {
-      setLoginError('Invalid Administrator credentials.');
+      setLoginError('Please enter valid administrator credentials.');
     }
     setIsSubmitting(false);
   };
@@ -158,6 +250,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      localStorage.removeItem('craxx_admin_session');
       localStorage.removeItem('beatsbyramz_admin_session');
       setUser(null);
       setBeats([]);
@@ -346,8 +439,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   type="text" 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="asxramzonfire09"
-                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-800 focus:border-purple-500 text-sm focus:outline-none placeholder-zinc-750 transition-all font-mono"
+                  placeholder=""
+                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-800 focus:border-amber-400 text-sm focus:outline-none placeholder-zinc-750 transition-all font-mono"
                   required
                 />
               </div>
@@ -358,8 +451,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••••"
-                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-800 focus:border-purple-500 text-sm focus:outline-none placeholder-zinc-750 transition-all font-mono"
+                  placeholder=""
+                  className="w-full bg-zinc-950 px-4 py-2.5 rounded-xl border border-zinc-800 focus:border-amber-400 text-sm focus:outline-none placeholder-zinc-750 transition-all font-mono"
                   required
                 />
               </div>
@@ -373,7 +466,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
               <button 
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans font-bold text-xs uppercase tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-bold text-xs uppercase tracking-wider transition-all shadow-lg active:scale-95 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <span className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
@@ -398,7 +491,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   onClick={() => setActiveFormTab('list')}
                   className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-sans font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${
                     activeFormTab === 'list' 
-                      ? 'bg-purple-650 text-white shadow-md shadow-purple-950/30' 
+                      ? 'bg-amber-400 text-black shadow-md shadow-amber-500/20 font-black' 
                       : 'text-zinc-400 hover:text-white hover:bg-zinc-850/40'
                   }`}
                 >
@@ -410,7 +503,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   onClick={handleAddClick}
                   className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-sans font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${
                     activeFormTab === 'add' 
-                      ? 'bg-purple-650 text-white shadow-md shadow-purple-950/30' 
+                      ? 'bg-amber-400 text-black shadow-md shadow-amber-500/20 font-black' 
                       : 'text-zinc-400 hover:text-white hover:bg-zinc-850/40'
                   }`}
                 >
@@ -422,7 +515,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   onClick={() => setActiveFormTab('genres')}
                   className={`w-full text-left px-3 py-2 rounded-xl text-[10px] font-sans font-bold uppercase tracking-wider transition-colors flex items-center gap-2 ${
                     activeFormTab === 'genres' 
-                      ? 'bg-purple-650 text-white shadow-md shadow-purple-950/30' 
+                      ? 'bg-amber-400 text-black shadow-md shadow-amber-500/20 font-black' 
                       : 'text-zinc-400 hover:text-white hover:bg-zinc-850/40'
                   }`}
                 >
@@ -706,30 +799,139 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                         />
                       </div>
 
-                      {/* Artwork URL */}
-                      <div className="md:col-span-2">
-                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 leading-none">Artwork URL (Unsplash or direct image link)</label>
+                      {/* Artwork Direct Upload & Preview */}
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest leading-none">
+                          Track Cover Artwork
+                        </label>
+                        
                         <input 
-                          type="text" 
-                          value={formData.artwork}
-                          onChange={(e) => setFormData({ ...formData, artwork: e.target.value })}
-                          placeholder="https://images.unsplash.com/photo-..."
-                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                          type="file" 
+                          ref={imageInputRef}
+                          onChange={handleImageFileSelect}
+                          accept="image/*"
+                          className="hidden"
                         />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
+                          {/* Dropzone Box */}
+                          <div 
+                            onClick={() => imageInputRef.current?.click()}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              const file = e.dataTransfer.files?.[0];
+                              if (file) {
+                                processImageFileToDataUrl(file).then(dataUrl => {
+                                  setFormData(prev => ({ ...prev, artwork: dataUrl }));
+                                }).catch(err => alert(err.message));
+                              }
+                            }}
+                            className="sm:col-span-3 border-2 border-dashed border-zinc-800 hover:border-amber-400 bg-zinc-950/60 hover:bg-zinc-900/60 p-4 rounded-2xl flex items-center justify-center gap-3 cursor-pointer transition-all group"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                              {isUploadingImage ? (
+                                <span className="w-5 h-5 border-2 border-t-transparent border-amber-400 rounded-full animate-spin" />
+                              ) : (
+                                <Upload className="w-5 h-5" />
+                              )}
+                            </div>
+                            <div className="text-left">
+                              <p className="text-xs font-sans font-bold text-zinc-200 group-hover:text-amber-400 transition-colors">
+                                Click or drag & drop image here
+                              </p>
+                              <p className="text-[9px] font-mono text-zinc-500">
+                                Supports PNG, JPG, WEBP. Saved directly to database.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Preview Thumbnail */}
+                          <div className="sm:col-span-1 flex flex-col items-center justify-center border border-zinc-850 bg-zinc-950 p-2 rounded-2xl h-full min-h-[70px]">
+                            {formData.artwork ? (
+                              <div className="relative group w-full h-full flex items-center justify-center">
+                                <img 
+                                  src={formData.artwork} 
+                                  alt="Artwork preview" 
+                                  className="w-12 h-12 rounded-xl object-cover border border-amber-400/50 shadow-md" 
+                                />
+                                <button 
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, artwork: '' }); }}
+                                  className="absolute -top-1 -right-1 bg-rose-500 text-white p-0.5 rounded-full text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Remove artwork"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="text-center text-zinc-600">
+                                <ImageIcon className="w-6 h-6 mx-auto mb-1 opacity-40" />
+                                <span className="text-[8px] font-mono">No Cover</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Optional URL input fallback */}
+                        <div className="pt-1">
+                          <input 
+                            type="text" 
+                            value={formData.artwork}
+                            onChange={(e) => setFormData({ ...formData, artwork: e.target.value })}
+                            placeholder="Or paste direct image URL (https://...)"
+                            className="w-full bg-zinc-950/40 border border-zinc-850/60 rounded-xl px-3 py-1.5 text-[10px] focus:outline-none focus:border-amber-400 font-mono text-zinc-400"
+                          />
+                        </div>
                       </div>
 
-                      {/* Beat URL (The music audio track path) */}
-                      <div className="md:col-span-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest leading-none">Audio File URL (Direct MP3 Link)</label>
-                          <span className="text-[8px] text-purple-400 font-mono leading-none">Must start with files.catbox.moe for best results</span>
+                      {/* Beat Audio Direct Upload & URL */}
+                      <div className="md:col-span-2 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest leading-none">
+                            Instrumental Audio Track
+                          </label>
                         </div>
+
+                        <input 
+                          type="file" 
+                          ref={audioInputRef}
+                          onChange={handleAudioFileSelect}
+                          accept="audio/*,.mp3,.wav,.ogg,.m4a"
+                          className="hidden"
+                        />
+
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <button
+                            type="button"
+                            onClick={() => audioInputRef.current?.click()}
+                            className="flex-1 border border-zinc-800 hover:border-amber-400 bg-zinc-950 hover:bg-zinc-900/60 px-4 py-3 rounded-2xl flex items-center justify-center gap-2 text-xs font-sans font-bold text-zinc-200 hover:text-amber-400 transition-all cursor-pointer"
+                          >
+                            {isUploadingAudio ? (
+                              <>
+                                <span className="w-4 h-4 border-2 border-t-transparent border-amber-400 rounded-full animate-spin" />
+                                <span className="font-mono text-[10px]">Uploading audio data...</span>
+                              </>
+                            ) : formData.beatUrl ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                <span className="text-emerald-400 font-mono text-[10px] truncate max-w-[200px]">Audio loaded & ready</span>
+                              </>
+                            ) : (
+                              <>
+                                <FileAudio className="w-4 h-4 text-amber-400" />
+                                <span>Upload Audio File (MP3 / WAV)</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
                         <input 
                           type="text" 
                           value={formData.beatUrl}
                           onChange={(e) => setFormData({ ...formData, beatUrl: e.target.value })}
-                          placeholder="https://files.catbox.moe/abc123.mp3"
-                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono text-purple-200"
+                          placeholder="Or paste audio URL (https://files.catbox.moe/...)"
+                          className="w-full bg-zinc-950/40 border border-zinc-850/60 rounded-xl px-3 py-1.5 text-[10px] focus:outline-none focus:border-amber-400 font-mono text-amber-200"
                           required
                         />
                       </div>

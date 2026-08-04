@@ -162,7 +162,7 @@ export default function CustomAudioPlayer() {
             <button
               onClick={() => setIsLooping(!isLooping)}
               className={`p-1.5 rounded-lg transition-colors ${
-                isLooping ? 'text-purple-400 bg-purple-950/20' : 'text-zinc-650 hover:text-zinc-400'
+                isLooping ? 'text-amber-400 bg-amber-950/40' : 'text-zinc-650 hover:text-zinc-400'
               }`}
             >
               <RotateCcw className="w-4 h-4" />
@@ -170,9 +170,9 @@ export default function CustomAudioPlayer() {
 
             <button
               onClick={handlePlayPause}
-              className="w-11 h-11 rounded-full bg-white hover:scale-105 active:scale-95 text-zinc-950 flex items-center justify-center transition-all shadow-lg"
+              className="w-11 h-11 rounded-full bg-amber-400 hover:bg-yellow-300 hover:scale-105 active:scale-95 text-black flex items-center justify-center transition-all shadow-lg shadow-amber-500/20"
             >
-              {isPlaying ? <Pause className="w-5 h-5 fill-zinc-950" /> : <Play className="w-5 h-5 fill-zinc-950 translate-x-0.5" />}
+              {isPlaying ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black translate-x-0.5" />}
             </button>
 
             <button
@@ -184,9 +184,12 @@ export default function CustomAudioPlayer() {
           </div>
 
           {/* Progress Slider (Unified) */}
-          <div className="flex items-center gap-3 w-full text-zinc-500 text-[10px] font-mono group">
-            <span className="hidden md:inline">{formattedProgress}</span>
-            <div className="flex-1 relative flex items-center h-6">
+          <div className="flex flex-col items-center w-full gap-1">
+            <AudioVisualizer className="h-6 md:h-8 opacity-40 max-w-sm" />
+            
+            <div className="flex items-center gap-3 w-full text-zinc-500 text-[10px] font-mono group">
+              <span className="hidden md:inline">{formattedProgress}</span>
+              <div className="flex-1 relative flex items-center h-6">
               <input 
                 type="range"
                 min="0"
@@ -198,19 +201,20 @@ export default function CustomAudioPlayer() {
               />
               <div className="w-full h-1.5 md:h-1 bg-zinc-900 rounded-full overflow-hidden relative">
                 <motion.div 
-                  className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-purple-500 to-pink-500"
+                  className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500"
                   initial={false}
                   animate={{ width: `${progressPercent}%` }}
                 />
               </div>
               <div 
-                className="absolute w-3 h-3 md:w-2.5 md:h-2.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.6)] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none"
+                className="absolute w-3 h-3 md:w-2.5 md:h-2.5 bg-amber-300 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.8)] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none"
                 style={{ left: `calc(${progressPercent}% - 6px)` }}
               />
             </div>
             <span className="text-zinc-300 md:text-zinc-500">{currentTrack.duration}</span>
           </div>
         </div>
+      </div>
 
         {/* Right Section: Actions */}
         <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-1/3">
@@ -226,9 +230,9 @@ export default function CustomAudioPlayer() {
 
           <button 
             onClick={handleBuyNow}
-            className="flex-grow md:flex-none flex items-center justify-center gap-3 px-6 py-4 md:py-2.5 rounded-2xl md:rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-sans font-black text-xs md:text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-purple-500/20 active:scale-95 transition-all"
+            className="flex-grow md:flex-none flex items-center justify-center gap-3 px-6 py-4 md:py-2.5 rounded-2xl md:rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-xs md:text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
           >
-            <Tag className="w-4 h-4 fill-white" />
+            <Tag className="w-4 h-4 fill-black" />
             Buy Now
           </button>
 
@@ -237,7 +241,7 @@ export default function CustomAudioPlayer() {
             <button onClick={handleMuteToggle} className="text-zinc-400 hover:text-white">
               {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </button>
-            <input type="range" min="0" max="1" step="0.05" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="w-20 accent-purple-500 h-1 bg-zinc-900 rounded-lg" />
+            <input type="range" min="0" max="1" step="0.05" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="w-20 accent-amber-400 h-1 bg-zinc-900 rounded-lg" />
           </div>
         </div>
       </div>
@@ -249,9 +253,9 @@ export default function CustomAudioPlayer() {
             animate={{ opacity: 1, y: -20, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             style={{ left: '50%', x: '-50%' }}
-            className="fixed bottom-[110px] md:bottom-[100px] z-[100] px-6 py-3 bg-zinc-900 border border-zinc-800 text-white rounded-2xl shadow-2xl flex items-center gap-3 w-[280px]"
+            className="fixed bottom-[110px] md:bottom-[100px] z-[100] px-6 py-3 bg-zinc-900 border border-amber-500/30 text-white rounded-2xl shadow-2xl flex items-center gap-3 w-[280px]"
           >
-            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
               <Tag className="w-4 h-4" />
             </div>
             <div className="font-sans">

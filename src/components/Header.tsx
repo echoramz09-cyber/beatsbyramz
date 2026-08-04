@@ -39,22 +39,22 @@ export default function Header({
         
         {/* Logo / Brand */}
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(147,51,234,0.8)] animate-pulse"></span>
-          <h1 className="text-white font-sans font-extrabold tracking-wider text-sm sm:text-base hover:text-purple-400 transition-colors lowercase">
-            beatsbyramz
+          <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(234,179,8,0.8)] animate-pulse"></span>
+          <h1 className="text-white font-sans font-extrabold tracking-wider text-sm sm:text-base hover:text-amber-400 transition-colors lowercase">
+            craxx
           </h1>
         </div>
 
         {/* Right side Search Input */}
         <div className="relative w-full max-w-[200px] sm:max-w-xs group ml-4">
           <div className="relative">
-            <Search className="w-4 h-4 text-zinc-550 absolute left-3 top-2.5 group-focus-within:text-purple-500 transition-colors" />
+            <Search className="w-4 h-4 text-zinc-550 absolute left-3 top-2.5 group-focus-within:text-amber-400 transition-colors" />
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-zinc-900 focus:bg-zinc-900/60 hover:bg-zinc-850 text-xs pl-9 pr-8 py-2.5 border border-zinc-800 focus:border-purple-500 rounded-xl text-white placeholder-zinc-500 focus:outline-none transition-all font-sans"
+              className="w-full bg-zinc-900 focus:bg-zinc-900/60 hover:bg-zinc-850 text-xs pl-9 pr-8 py-2.5 border border-zinc-800 focus:border-amber-400 rounded-xl text-white placeholder-zinc-500 focus:outline-none transition-all font-sans"
             />
             {searchQuery && (
               <button 
@@ -108,7 +108,7 @@ export default function Header({
                                referrerPolicy="no-referrer" 
                              />
                              {isPlayingRow && (
-                               <div className="absolute inset-0 bg-purple-500/40 flex items-center justify-center">
+                               <div className="absolute inset-0 bg-amber-500/40 flex items-center justify-center">
                                  <div className="flex gap-0.5 items-end">
                                    <span className="w-0.5 bg-white animate-[bounce_0.6s_infinite] h-2"></span>
                                    <span className="w-0.5 bg-white animate-[bounce_0.4s_infinite_0.1s] h-3"></span>
@@ -123,13 +123,13 @@ export default function Header({
                            <div className="flex-grow min-w-0">
                              <h5 className="text-zinc-100 text-xs font-bold font-sans truncate pr-2">{track.title}</h5>
                              <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[9px] text-purple-400 font-mono font-bold uppercase">{track.genre}</span>
+                                <span className="text-[9px] text-amber-400 font-mono font-bold uppercase">{track.genre}</span>
                                 <span className="w-0.5 h-0.5 rounded-full bg-zinc-700" />
                                 <span className="text-[9px] text-zinc-500 font-mono">{track.bpm} BPM</span>
                              </div>
                            </div>
                            <div className="flex-shrink-0">
-                             <Headphones className="w-3.5 h-3.5 text-zinc-700 group-hover:text-purple-500 transition-colors" />
+                             <Headphones className="w-3.5 h-3.5 text-zinc-700 group-hover:text-amber-400 transition-colors" />
                            </div>
                          </button>
                        );

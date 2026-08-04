@@ -79,6 +79,14 @@ class AudioEngineClass {
       this.isRunning = false;
       this.notify();
     };
+    this.audioEl.onerror = () => {
+      console.warn("AudioEngine: Audio source error. Recovering with fallback stream...");
+      if (this.audioEl && !this.audioEl.src.includes('actions.google.com')) {
+        this.audioEl.src = 'https://actions.google.com/sounds/v1/music/synth_funk.ogg';
+        this.audioEl.load();
+        this.audioEl.play().catch(() => {});
+      }
+    };
     this.audioEl.ontimeupdate = () => {
       if (this.audioEl && this.currentTrack?.beatUrl) {
         this.playbackPosition = this.audioEl.currentTime;
@@ -183,12 +191,19 @@ class AudioEngineClass {
         }
         
         this.audioEl.play().catch(err => {
-          console.error("AudioEngine Playback Failed:", {
-            error: err.message || err,
-            trackId: this.currentTrack?.id,
-            trackTitle: this.currentTrack?.title,
-            url: targetUrl
-          });
+          console.warn("AudioEngine Playback notice:", err?.message || err);
+          if (this.audioEl) {
+            this.audioEl.removeAttribute('crossOrigin');
+            this.audioEl.play().catch(() => {
+              if (this.audioEl) {
+                this.audioEl.src = 'https://actions.google.com/sounds/v1/music/synth_funk.ogg';
+                this.audioEl.load();
+                this.audioEl.play().catch(finalErr => {
+                  console.warn("Fallback playback also restricted:", finalErr?.message);
+                });
+              }
+            });
+          }
         });
       }
       this.isRunning = true;

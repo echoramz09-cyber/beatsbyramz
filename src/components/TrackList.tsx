@@ -75,8 +75,8 @@ export default function TrackList({
       </div>
 
         {/* Modern Filter Chip Row */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-zinc-500 font-sans font-bold text-[10px] uppercase tracking-widest mr-2 hidden sm:inline flex-shrink-0">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap">
+          <span className="text-zinc-500 font-sans font-bold text-[10px] uppercase tracking-widest mr-2 hidden lg:inline flex-shrink-0">
             Quick Filter:
           </span>
           {genreFilters.map((g) => {
@@ -86,9 +86,9 @@ export default function TrackList({
                 key={g}
                 onClick={() => setSelectedGenre(g)}
                 id={`filter-genre-btn-${g.replace(/\s+/g, '-').toLowerCase()}`}
-                className={`px-3 py-2 md:px-4 md:py-2 rounded-xl text-[9px] md:text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer ${
+                className={`px-3 py-2 md:px-4 md:py-2 rounded-xl text-[9px] md:text-[10px] font-sans font-bold tracking-widest transition-all uppercase cursor-pointer flex-shrink-0 ${
                   isSelected 
-                    ? 'bg-purple-600 border border-purple-500 text-white shadow-lg shadow-purple-500/15' 
+                    ? 'bg-amber-400 border border-yellow-300 text-black font-black shadow-lg shadow-amber-500/25' 
                     : 'bg-zinc-900 border border-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-850'
                 }`}
               >
@@ -132,7 +132,7 @@ export default function TrackList({
                   {/* Category Header */}
                   {selectedGenre !== 'All' && (
                     <div className="px-4 py-3 bg-zinc-900/20 rounded-xl mb-4 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(234,179,8,0.8)]" />
                       <h3 className="text-[10px] font-sans font-black text-zinc-400 uppercase tracking-[0.2em]">{genre}</h3>
                       <span className="text-[9px] text-zinc-650 font-mono">({filteredTracks.filter(t => t.genre === genre).length} total)</span>
                     </div>
@@ -191,10 +191,10 @@ export default function TrackList({
                                 </div>
 
                                 {isPlayingRow && (
-                                  <div className="absolute inset-0 bg-purple-900/50 flex gap-0.5 items-end justify-center pb-3 md:pb-2.5 group-hover:opacity-0 pointer-events-none transition-opacity">
-                                    <span className="w-1 bg-white animate-[bounce_0.8s_infinite] h-4"></span>
-                                    <span className="w-1 bg-white animate-[bounce_0.5s_infinite_0.15s] h-6"></span>
-                                    <span className="w-1 bg-white animate-[bounce_0.7s_infinite_0.3s] h-3"></span>
+                                  <div className="absolute inset-0 bg-amber-950/60 flex gap-0.5 items-end justify-center pb-3 md:pb-2.5 group-hover:opacity-0 pointer-events-none transition-opacity">
+                                    <span className="w-1 bg-amber-300 animate-[bounce_0.8s_infinite] h-4"></span>
+                                    <span className="w-1 bg-amber-300 animate-[bounce_0.5s_infinite_0.15s] h-6"></span>
+                                    <span className="w-1 bg-amber-300 animate-[bounce_0.7s_infinite_0.3s] h-3"></span>
                                   </div>
                                 )}
                               </div>
@@ -227,9 +227,9 @@ export default function TrackList({
                           <div className="md:col-span-2 w-full md:w-auto md:flex md:justify-center">
                             <button
                               onClick={handleRowBuyNow}
-                              className="w-full md:w-auto px-6 py-3.5 md:px-4 md:py-2 rounded-2xl md:rounded-xl bg-purple-600 md:bg-zinc-900 border border-purple-500/30 md:border-zinc-800 text-[11px] md:text-[10px] font-sans md:font-mono font-black text-white md:text-zinc-400 hover:text-white hover:bg-purple-500 md:hover:bg-zinc-800 transition-all uppercase tracking-widest flex items-center justify-center gap-2.5 group/buy active:scale-95 shadow-lg shadow-purple-500/10 md:shadow-none"
+                              className="w-full md:w-auto px-6 py-3.5 md:px-4 md:py-2 rounded-2xl md:rounded-xl bg-amber-400 md:bg-zinc-900 border border-amber-400/30 md:border-zinc-800 text-[11px] md:text-[10px] font-sans md:font-mono font-black text-black md:text-zinc-400 hover:text-white md:hover:text-amber-400 hover:bg-amber-400 md:hover:bg-zinc-800 transition-all uppercase tracking-widest flex items-center justify-center gap-2.5 group/buy active:scale-95 shadow-lg shadow-amber-500/10 md:shadow-none"
                             >
-                              <Tag className="w-4 h-4 md:w-3 md:h-3 group-hover/buy:text-white md:group-hover/buy:text-purple-500 transition-colors" />
+                              <Tag className="w-4 h-4 md:w-3 md:h-3 group-hover/buy:text-black md:group-hover/buy:text-amber-400 transition-colors" />
                               Buy Now
                             </button>
                           </div>
