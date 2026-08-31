@@ -10,7 +10,12 @@ interface LicenseModalProps {
 }
 
 export default function LicenseModal({ track, isOpen, onClose }: LicenseModalProps) {
-  const [copiedLicense, setCopiedLicense] = useState<string | null>(null);
+  const [selectedTierForConfirm, setSelectedTierForConfirm] = useState<{
+    name: string;
+    price: number;
+    text: string;
+  } | null>(null);
+  const [hasCopied, setHasCopied] = useState(false);
 
   if (!isOpen || !track) return null;
 
@@ -89,15 +94,32 @@ export default function LicenseModal({ track, isOpen, onClose }: LicenseModalPro
   const handleSelectLicense = (licenseName: string, price: number) => {
     const inquiryText = `Hi Craxx! I would like to purchase the "${licenseName}" for the beat "${track.title}" (₹${price.toLocaleString()}).\nTempo: ${track.bpm} BPM | Key: ${track.key} | Genre: ${track.genre}`;
     
-    navigator.clipboard.writeText(inquiryText).then(() => {
-      setCopiedLicense(licenseName);
-      setTimeout(() => setCopiedLicense(null), 3500);
+    // Copy to clipboard immediately
+    navigator.clipboard.writeText(inquiryText).catch(() => {});
+    setHasCopied(true);
 
-      // Open Instagram DM
-      setTimeout(() => {
-        window.open('https://ig.me/m/craxxbeats.india', '_blank');
-      }, 600);
+    // Open confirmation popup
+    setSelectedTierForConfirm({
+      name: licenseName,
+      price,
+      text: inquiryText
     });
+  };
+
+  const handleProceedToInstagram = () => {
+    if (selectedTierForConfirm) {
+      navigator.clipboard.writeText(selectedTierForConfirm.text).catch(() => {});
+    }
+    window.open('https://ig.me/m/craxxbeats.india', '_blank');
+    setSelectedTierForConfirm(null);
+  };
+
+  const handleCopyAgain = () => {
+    if (selectedTierForConfirm) {
+      navigator.clipboard.writeText(selectedTierForConfirm.text);
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+    }
   };
 
   return (
@@ -258,16 +280,100 @@ export default function LicenseModal({ track, isOpen, onClose }: LicenseModalPro
 
         {/* Toast alert on copy */}
         <AnimatePresence>
-          {copiedLicense && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-16 left-1/2 -translate-x-1/2 px-4 py-2 bg-amber-400 text-black rounded-xl font-sans font-black text-xs shadow-xl flex items-center gap-2 z-50 pointer-events-none"
-            >
-              <Check className="w-4 h-4" />
-              <span>Inquiry details copied! Opening Instagram DM...</span>
-            </motion.div>
+          {selectedTierForConfirm && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedTierForConfirm(null)}
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+              />
+
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                transition={{ duration: 0.2 }}
+                className="relative bg-zinc-900 border border-amber-400/40 w-full max-w-lg rounded-3xl shadow-2xl p-6 sm:p-7 text-white z-20 space-y-5 ring-1 ring-amber-400/20"
+              >
+                {/* Header Icon & Title */}
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-yellow-500 via-rose-500 to-purple-600 p-0.5 shadow-lg flex items-center justify-center">
+                      <div className="w-full h-full bg-zinc-950 rounded-[14px] flex items-center justify-center">
+                        <Instagram className="w-6 h-6 text-rose-400" />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400">
+                        Instagram Direct Message
+                      </span>
+                      <h4 className="text-lg sm:text-xl font-bold font-sans tracking-tight text-white">
+                        Order Details Ready!
+                      </h4>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedTierForConfirm(null)}
+                    className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Instructions Box */}
+                <div className="bg-zinc-950/80 border border-zinc-800/80 rounded-2xl p-4 space-y-3">
+                  <div className="flex items-center gap-2.5 text-emerald-400 text-xs font-sans font-bold">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    </div>
+                    <span>Beat & license details copied to your clipboard!</span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed">
+                    Instagram will open when you click <strong className="text-amber-400">OK</strong>. Check your clipboard and simply <strong className="text-white">paste (Ctrl+V / Paste)</strong> the message into the chat with <strong className="text-amber-400 font-mono">@craxxbeats.india</strong>.
+                  </p>
+
+                  {/* Message Preview Box */}
+                  <div className="mt-2 bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-[11px] font-mono text-zinc-400 relative">
+                    <div className="flex items-center justify-between text-[10px] text-zinc-500 mb-1 pb-1 border-b border-zinc-800 font-sans">
+                      <span>Message Preview:</span>
+                      <button
+                        onClick={handleCopyAgain}
+                        className="text-amber-400 hover:text-yellow-300 flex items-center gap-1 font-mono cursor-pointer"
+                      >
+                        <Copy className="w-3 h-3" />
+                        <span>{hasCopied ? 'Copied!' : 'Copy again'}</span>
+                      </button>
+                    </div>
+                    <p className="whitespace-pre-line text-zinc-300">
+                      {selectedTierForConfirm.text}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col-reverse sm:flex-row gap-2.5 pt-1">
+                  <button
+                    onClick={() => setSelectedTierForConfirm(null)}
+                    className="w-full sm:w-1/3 py-3 px-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-sans font-bold text-xs transition-colors cursor-pointer text-center"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={handleProceedToInstagram}
+                    className="w-full sm:w-2/3 py-3 px-4 rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:brightness-105 text-black font-sans font-black text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-[0.98] cursor-pointer"
+                  >
+                    <Instagram className="w-4 h-4 text-black" />
+                    <span>OK, Open Instagram DM</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-black/70" />
+                  </button>
+                </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </motion.div>
