@@ -35,20 +35,20 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
           </h2>
         </motion.div>
 
-        {/* Beats Showcase Grid - Exactly 2 visible on mobile, all on larger screens */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 w-full">
+        {/* Beats Showcase Grid - All 8 Ranked Top Beats */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
           {topTracks.map((track, index) => {
             const isActive = activeTrackId === track.id;
             const isPlayingThis = isActive && isPlaying;
-            const isMobileHidden = index >= 2;
+            const rank = index + 1;
 
             return (
               <motion.div 
                 key={track.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`group relative w-full ${isMobileHidden ? 'hidden sm:block' : 'block'}`}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
+                className="group relative w-full block"
               >
                 <div 
                   onClick={() => onPlayToggle(track)}
@@ -63,6 +63,19 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       referrerPolicy="no-referrer"
                     />
+
+                    {/* Rank Badge (#1 - #8) */}
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-black backdrop-blur-md border ${
+                        rank === 1 
+                          ? 'bg-amber-400/90 text-black border-amber-300 shadow-md shadow-amber-500/30' 
+                          : rank <= 3
+                          ? 'bg-black/75 text-amber-300 border-amber-400/40'
+                          : 'bg-black/75 text-zinc-300 border-zinc-700/60'
+                      }`}>
+                        #{rank}
+                      </span>
+                    </div>
                     
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

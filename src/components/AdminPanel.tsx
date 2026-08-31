@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { LogIn, LogOut, Shield, Plus, Edit2, Trash2, X, Music, Check, Settings, Save, Sparkles, Filter, ChevronRight, Hash, Layout, Upload, Image as ImageIcon, FileAudio, CheckCircle2 } from 'lucide-react';
+import { LogIn, LogOut, Shield, Plus, Edit2, Trash2, X, Music, Check, Settings, Save, Sparkles, Filter, ChevronRight, Hash, Layout, Upload, Image as ImageIcon, FileAudio, CheckCircle2, Headphones } from 'lucide-react';
 import { signInAnonymously, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { fetchBeats, addBeat, updateBeat, deleteBeat } from '../lib/beatService';
@@ -90,6 +90,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
   const [activeFormTab, setActiveFormTab] = useState<'list' | 'add' | 'edit' | 'genres'>('list');
   const [selectedBeat, setSelectedBeat] = useState<Track | null>(null);
   const [adminGenreFilter, setAdminGenreFilter] = useState('All');
+  const [adminSortBy, setAdminSortBy] = useState<'plays' | 'newest' | 'title'>('plays');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [newGenreName, setNewGenreName] = useState('');
 
@@ -141,7 +142,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
     duration: '3:00',
     artwork: '',
     mood: 'Dark' as Track['mood'],
-    beatUrl: ''
+    beatUrl: '',
+    plays: 0
   });
 
   // Default Artwork mapping by genre
@@ -277,7 +279,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       duration: beat.duration,
       artwork: beat.artwork,
       mood: beat.mood,
-      beatUrl: beat.beatUrl || ''
+      beatUrl: beat.beatUrl || '',
+      plays: beat.plays || 0
     });
     setActiveFormTab('edit');
   };
@@ -297,7 +300,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       duration: '3:00',
       artwork: '',
       mood: 'Dark',
-      beatUrl: ''
+      beatUrl: '',
+      plays: 0
     });
     setActiveFormTab('add');
   };
@@ -372,7 +376,8 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       duration: formData.duration?.trim() || '3:00',
       artwork: finalArtwork.trim(),
       mood: formData.mood,
-      beatUrl: trimmedBeatUrl
+      beatUrl: trimmedBeatUrl,
+      plays: Number(formData.plays) || 0
     };
 
     try {
@@ -550,10 +555,12 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                   <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div>
                       <h4 className="text-base font-bold font-sans tracking-tight">Active Instrumentals</h4>
-                      <p className="text-[10px] text-zinc-400 font-mono">Total catalog tracks: {beats.length}</p>
+                      <p className="text-[10px] text-zinc-400 font-mono">
+                        Total catalog tracks: {beats.length} • Total plays: {beats.reduce((sum, b) => sum + (b.plays || 0), 0).toLocaleString()}
+                      </p>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                        {adminGenreFilter !== 'All' && (
                          <button 
                            onClick={handleBulkDelete}
@@ -563,17 +570,33 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                            Purge All
                          </button>
                        )}
-                       <span className="text-[9px] text-zinc-500 font-mono uppercase">Filter:</span>
-                       <select 
-                         value={adminGenreFilter}
-                         onChange={(e) => setAdminGenreFilter(e.target.value)}
-                         className="bg-zinc-950 border border-zinc-850 rounded-lg px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-purple-500"
-                       >
-                         <option value="All">All Genres</option>
-                         {genres.map(g => (
-                           <option key={g.id} value={g.name}>{g.name}</option>
-                         ))}
-                       </select>
+
+                       <div className="flex items-center gap-1">
+                         <span className="text-[9px] text-zinc-500 font-mono uppercase">Sort:</span>
+                         <select 
+                           value={adminSortBy}
+                           onChange={(e) => setAdminSortBy(e.target.value as 'plays' | 'newest' | 'title')}
+                           className="bg-zinc-950 border border-zinc-850 rounded-lg px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-amber-400 text-amber-400 font-bold"
+                         >
+                           <option value="plays">🔥 Most Plays</option>
+                           <option value="newest">🕒 Newest</option>
+                           <option value="title">🔤 Title (A-Z)</option>
+                         </select>
+                       </div>
+
+                       <div className="flex items-center gap-1">
+                         <span className="text-[9px] text-zinc-500 font-mono uppercase">Genre:</span>
+                         <select 
+                           value={adminGenreFilter}
+                           onChange={(e) => setAdminGenreFilter(e.target.value)}
+                           className="bg-zinc-950 border border-zinc-850 rounded-lg px-2 py-1 text-[10px] font-mono focus:outline-none focus:border-purple-500"
+                         >
+                           <option value="All">All Genres</option>
+                           {genres.map(g => (
+                             <option key={g.id} value={g.name}>{g.name}</option>
+                           ))}
+                         </select>
+                       </div>
                     </div>
                   </div>
 
@@ -589,14 +612,38 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-2.5 pb-2">
-                        {beats
+                        {[...beats]
                           .filter(b => adminGenreFilter === 'All' || b.genre === adminGenreFilter)
-                          .map((beat) => (
+                          .sort((a, b) => {
+                            if (adminSortBy === 'plays') {
+                              return (b.plays || 0) - (a.plays || 0);
+                            }
+                            if (adminSortBy === 'title') {
+                              return a.title.localeCompare(b.title);
+                            }
+                            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                            return dateB - dateA;
+                          })
+                          .map((beat, idx) => (
                           <div 
                             key={beat.id}
-                            className="flex items-center justify-between bg-zinc-950/40 hover:bg-zinc-950/80 border border-zinc-850/60 hover:border-zinc-800 px-4 py-3 rounded-2xl transition-all"
+                            className="flex items-center justify-between bg-zinc-950/40 hover:bg-zinc-950/80 border border-zinc-850/60 hover:border-zinc-800 px-4 py-3 rounded-2xl transition-all gap-3"
                           >
                             <div className="flex items-center gap-3 min-w-0">
+                              {/* Rank Indicator */}
+                              {adminSortBy === 'plays' && (
+                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-mono font-black flex-shrink-0 ${
+                                  idx === 0 
+                                    ? 'bg-amber-400 text-black shadow-md shadow-amber-500/20' 
+                                    : idx < 3 
+                                    ? 'bg-zinc-800 text-amber-300 border border-amber-400/30' 
+                                    : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
+                                }`}>
+                                  #{idx + 1}
+                                </span>
+                              )}
+
                               <img 
                                 src={beat.artwork} 
                                 alt={beat.title} 
@@ -611,7 +658,13 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {/* Play count badge visible in Admin Panel */}
+                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/10 border border-amber-400/25 text-amber-400 font-mono text-[10px] font-bold">
+                                <Headphones className="w-3 h-3 text-amber-400" />
+                                <span>{(beat.plays || 0).toLocaleString()} plays</span>
+                              </div>
+
                               <button
                                 onClick={() => handleEditClick(beat)}
                                 className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
@@ -978,6 +1031,17 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                           value={formData.priceUnlimited}
                           onChange={(e) => setFormData({ ...formData, priceUnlimited: Number(e.target.value) })}
                           className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                        />
+                      </div>
+
+                      {/* Play Count Field */}
+                      <div>
+                        <label className="block text-[9px] font-mono text-amber-400 uppercase tracking-widest mb-1 leading-none">Play Count (Plays)</label>
+                        <input 
+                          type="number" 
+                          value={formData.plays}
+                          onChange={(e) => setFormData({ ...formData, plays: Number(e.target.value) })}
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 font-mono text-amber-400 font-bold"
                         />
                       </div>
                     </div>

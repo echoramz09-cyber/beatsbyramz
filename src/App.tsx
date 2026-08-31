@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Track } from './types';
-import { fetchBeats } from './lib/beatService';
+import { fetchBeats, incrementBeatPlay } from './lib/beatService';
 import { fetchGenres, Genre } from './lib/genreService';
 import AudioEngine from './utils/AudioEngine';
 import { motion, AnimatePresence } from 'motion/react';
@@ -65,11 +65,31 @@ export default function App() {
     loadCatalogData();
   }, []);
 
+  const recordedPlayTrackIdRef = useRef<string | null>(null);
+
+  const recordPlay = (trackId: string) => {
+    // Increment in Firestore
+    incrementBeatPlay(trackId);
+    // Update local state in real-time
+    setTracks(prev =>
+      prev.map(t => (t.id === trackId ? { ...t, plays: (t.plays || 0) + 1 } : t))
+    );
+  };
+
   // Sync isPlaying & activeTrack with state changes from the central AudioEngine singleton
   useEffect(() => {
     const handleEngineChange = (state: any) => {
       setIsPlaying(state.isPlaying);
       setActiveTrack(state.currentTrack);
+
+      if (state.isPlaying && state.currentTrack?.id) {
+        if (recordedPlayTrackIdRef.current !== state.currentTrack.id) {
+          recordedPlayTrackIdRef.current = state.currentTrack.id;
+          recordPlay(state.currentTrack.id);
+        }
+      } else if (!state.isPlaying) {
+        recordedPlayTrackIdRef.current = null;
+      }
     };
 
     const unsubscribe = AudioEngine.subscribe(handleEngineChange);
@@ -78,8 +98,20 @@ export default function App() {
 
   // Play controls
   const handlePlayToggle = (track: Track) => {
+    if (!isPlaying || activeTrack?.id !== track.id) {
+      recordPlay(track.id);
+    }
     AudioEngine.togglePlay(track);
   };
+
+  // Top 1 to Top 8 beats ranked dynamically by play count
+  const topTracks = [...tracks]
+    .sort((a, b) => {
+      const playsA = typeof a.plays === 'number' ? a.plays : 0;
+      const playsB = typeof b.plays === 'number' ? b.plays : 0;
+      return playsB - playsA;
+    })
+    .slice(0, 8);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-purple-600 selection:text-white flex flex-col justify-between transition-colors duration-500 relative">
@@ -206,7 +238,7 @@ export default function App() {
         
         {/* Banner/Hero Section */}
         <Hero 
-          topTracks={tracks.slice(0, 5)}
+          topTracks={topTracks}
           isPlaying={isPlaying}
           activeTrackId={activeTrack?.id}
           onPlayToggle={handlePlayToggle}

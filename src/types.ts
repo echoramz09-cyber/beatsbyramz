@@ -13,6 +13,7 @@ export interface Track {
   artwork: string;
   mood: 'Dark' | 'Chill' | 'Energetic' | 'Inspiring' | 'Hypnotic' | 'Happy' | 'Sad' | 'Intense';
   beatUrl?: string;
+  plays?: number;
   createdAt?: string;
   updatedAt?: string;
 }

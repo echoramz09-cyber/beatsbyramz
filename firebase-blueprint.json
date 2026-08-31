@@ -61,6 +61,10 @@
           "type": "string",
           "description": "External audio URL to play"
         },
+        "plays": {
+          "type": "number",
+          "description": "Total number of times this beat has been played"
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
