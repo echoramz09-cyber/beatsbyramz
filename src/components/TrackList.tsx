@@ -12,6 +12,7 @@ interface TrackListProps {
   activeTrackId: string | undefined;
   isPlaying: boolean;
   searchQuery: string;
+  onOpenLicense: (track: Track) => void;
 }
 
 export default function TrackList({ 
@@ -20,11 +21,11 @@ export default function TrackList({
   onPlayToggle, 
   activeTrackId, 
   isPlaying,
-  searchQuery
+  searchQuery,
+  onOpenLicense
 }: TrackListProps) {
   const [selectedGenre, setSelectedGenre] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
-  const [showCopyPopup, setShowCopyPopup] = useState(false);
   const itemsPerPage = 15;
 
   // Use dynamic genres from Firebase + 'All'
@@ -115,7 +116,7 @@ export default function TrackList({
           <div className="col-span-3 pl-4">Title • <span className="text-zinc-600 font-mono font-normal">Click beat to play</span></div>
           <div className="col-span-2 text-center">BPM • Time</div>
           <div className="col-span-1 text-center">Key</div>
-          <div className="col-span-2 text-center">Buy Now</div>
+          <div className="col-span-2 text-center text-amber-400">Price & License (₹)</div>
           <div className="col-span-3 pl-4">Tags</div>
         </div>
 
@@ -150,19 +151,11 @@ export default function TrackList({
                     {groupedTracks[genre].map((track) => {
                       const isActive = activeTrackId === track.id;
                       const isPlayingRow = isActive && isPlaying;
+                      const basicPrice = track.priceBasic || 999;
 
                       const handleRowBuyNow = (e: MouseEvent) => {
                         e.stopPropagation();
-                        const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
-                        
-                        navigator.clipboard.writeText(info).then(() => {
-                          setShowCopyPopup(true);
-                          setTimeout(() => setShowCopyPopup(false), 3000);
-                          
-                          setTimeout(() => {
-                            window.open('https://ig.me/m/craxxbeats.india', '_blank');
-                          }, 1000);
-                        });
+                        onOpenLicense(track);
                       };
 
                       return (
@@ -238,7 +231,7 @@ export default function TrackList({
                                 )}
                                 <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.bpm} BPM</span>
                                 <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.key}</span>
-                                <span>{track.duration}</span>
+                                <span className="px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold">₹{basicPrice.toLocaleString()}</span>
                               </div>
                             </div>
                           </div>
@@ -252,15 +245,16 @@ export default function TrackList({
                             {track.key}
                           </div>
 
-                          {/* Action Button */}
-                          <div className="md:col-span-2 w-full md:w-auto md:flex md:justify-center">
+                          {/* Action Button & Price in Rupees */}
+                          <div className="md:col-span-2 w-full md:w-auto md:flex md:flex-col md:items-center md:justify-center gap-1">
                             <button
                               onClick={handleRowBuyNow}
-                              className="w-full md:w-auto px-6 py-3.5 md:px-4 md:py-2 rounded-2xl md:rounded-xl bg-amber-400 md:bg-zinc-900 border border-amber-400/30 md:border-zinc-800 text-[11px] md:text-[10px] font-sans md:font-mono font-black text-black md:text-zinc-400 hover:text-white md:hover:text-amber-400 hover:bg-amber-400 md:hover:bg-zinc-800 transition-all uppercase tracking-widest flex items-center justify-center gap-2.5 group/buy active:scale-95 shadow-lg shadow-amber-500/10 md:shadow-none"
+                              className="w-full md:w-auto px-4 py-2 sm:py-2.5 rounded-xl bg-amber-400 hover:bg-yellow-300 border border-amber-300 text-[11px] font-sans font-black text-black transition-all uppercase tracking-wider flex items-center justify-center gap-2 group/buy active:scale-95 shadow-md shadow-amber-500/20 cursor-pointer"
                             >
-                              <Tag className="w-4 h-4 md:w-3 md:h-3 group-hover/buy:text-black md:group-hover/buy:text-amber-400 transition-colors" />
-                              Buy Now
+                              <Tag className="w-3.5 h-3.5 fill-black" />
+                              <span>₹{basicPrice.toLocaleString()} • Buy</span>
                             </button>
+                            <span className="hidden md:block text-[9px] font-mono text-zinc-500 text-center">4 License Tiers</span>
                           </div>
 
                           {/* TAGS - Scrollable on mobile if needed, though card is better */}
@@ -346,28 +340,6 @@ export default function TrackList({
           )}
 
         </div>
-
-      {/* Copy Confirmation Toast */}
-      <AnimatePresence>
-        {showCopyPopup && (
-          <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.9 }}
-            animate={{ opacity: 1, y: -20, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            style={{ left: '50%', x: '-50%' }}
-            className="fixed bottom-[110px] md:bottom-[100px] z-[100] px-6 py-3 bg-zinc-900 border border-zinc-800 text-white rounded-2xl shadow-2xl flex items-center gap-3 w-[280px]"
-          >
-            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
-              <Tag className="w-4 h-4" />
-            </div>
-            <div className="font-sans">
-              <p className="text-[10px] font-black text-white uppercase tracking-wider">Beat Details Copied!</p>
-              <p className="text-[10px] text-zinc-400">Paste in Instagram DMs</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
-
 }

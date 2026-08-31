@@ -14,6 +14,7 @@ import Footer from './components/Footer';
 import CustomAudioPlayer from './components/CustomAudioPlayer';
 import AdminPanel from './components/AdminPanel';
 import LoadingScreen from './components/LoadingScreen';
+import LicenseModal from './components/LicenseModal';
 
 const COSMIC_PARTICLES = [
   { id: 1, size: 6, left: "8%", top: "12%", delay: 0, duration: 18, color: "#d946ef", driftX: [0, 60, -40, 0], driftY: [0, -50, 70, 0] },
@@ -43,6 +44,7 @@ export default function App() {
   const [genres, setGenres] = useState<Genre[]>([]);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [isLoadingTracks, setIsLoadingTracks] = useState(true);
+  const [selectedLicenseTrack, setSelectedLicenseTrack] = useState<Track | null>(null);
 
   // Load catalog data from Firestore
   const loadCatalogData = async () => {
@@ -252,6 +254,7 @@ export default function App() {
           activeTrackId={activeTrack?.id}
           isPlaying={isPlaying}
           searchQuery={searchQuery}
+          onOpenLicense={(track) => setSelectedLicenseTrack(track)}
         />
 
       </main>
@@ -271,7 +274,16 @@ export default function App() {
        />
 
       {/* Sticky Player HUD */}
-      <CustomAudioPlayer />
+      <CustomAudioPlayer 
+        onOpenLicense={(track) => setSelectedLicenseTrack(track)}
+      />
+
+      {/* Licensing Tiers Popup Modal (MP3, WAV, WAV+Stems, Exclusive in ₹) */}
+      <LicenseModal 
+        track={selectedLicenseTrack}
+        isOpen={!!selectedLicenseTrack}
+        onClose={() => setSelectedLicenseTrack(null)}
+      />
 
     </div>
   );

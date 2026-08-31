@@ -6,9 +6,10 @@ export interface Track {
   key: string;
   genre: string;
   tags: string[];
-  priceBasic: number;
-  pricePremium: number;
-  priceUnlimited: number;
+  priceBasic: number; // MP3 License price in INR (₹)
+  pricePremium: number; // WAV License price in INR (₹)
+  priceUnlimited: number; // WAV + Stems License price in INR (₹)
+  priceExclusive?: number; // Exclusive License price in INR (₹)
   duration: string;
   artwork: string;
   mood: 'Dark' | 'Chill' | 'Energetic' | 'Inspiring' | 'Hypnotic' | 'Happy' | 'Sad' | 'Intense';
@@ -18,12 +19,13 @@ export interface Track {
   updatedAt?: string;
 }
 
-export type LicenseType = 'basic' | 'premium' | 'unlimited';
+export type LicenseType = 'mp3' | 'wav' | 'stems' | 'exclusive';
 
 export interface LicenseOption {
   type: LicenseType;
   name: string;
   price: number;
+  format: string;
   features: string[];
 }
 

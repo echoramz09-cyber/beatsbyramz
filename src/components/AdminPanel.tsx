@@ -136,9 +136,10 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
     key: 'G Minor',
     genre: 'Trap',
     tagsString: '808; Atmospheric; Trap',
-    priceBasic: 29,
-    pricePremium: 49,
-    priceUnlimited: 149,
+    priceBasic: 999,
+    pricePremium: 1999,
+    priceUnlimited: 3999,
+    priceExclusive: 9999,
     duration: '3:00',
     artwork: '',
     mood: 'Dark' as Track['mood'],
@@ -273,9 +274,10 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       key: beat.key,
       genre: beat.genre,
       tagsString: beat.tags.join('; '),
-      priceBasic: beat.priceBasic,
-      pricePremium: beat.pricePremium,
-      priceUnlimited: beat.priceUnlimited,
+      priceBasic: beat.priceBasic || 999,
+      pricePremium: beat.pricePremium || 1999,
+      priceUnlimited: beat.priceUnlimited || 3999,
+      priceExclusive: beat.priceExclusive || 9999,
       duration: beat.duration,
       artwork: beat.artwork,
       mood: beat.mood,
@@ -294,9 +296,10 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       key: 'G Minor',
       genre: 'Trap',
       tagsString: '808; Atmospheric; Trap',
-      priceBasic: 29,
-      pricePremium: 49,
-      priceUnlimited: 149,
+      priceBasic: 999,
+      pricePremium: 1999,
+      priceUnlimited: 3999,
+      priceExclusive: 9999,
       duration: '3:00',
       artwork: '',
       mood: 'Dark',
@@ -370,9 +373,10 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
       key: formData.key.trim(),
       genre: formData.genre,
       tags,
-      priceBasic: Number(formData.priceBasic),
-      pricePremium: Number(formData.pricePremium),
-      priceUnlimited: Number(formData.priceUnlimited),
+      priceBasic: Number(formData.priceBasic) || 999,
+      pricePremium: Number(formData.pricePremium) || 1999,
+      priceUnlimited: Number(formData.priceUnlimited) || 3999,
+      priceExclusive: Number(formData.priceExclusive) || 9999,
       duration: formData.duration?.trim() || '3:00',
       artwork: finalArtwork.trim(),
       mood: formData.mood,
@@ -408,7 +412,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="relative bg-zinc-900 border border-zinc-800/80 w-full max-w-4xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-white font-sans z-10"
+        className="relative bg-zinc-900 border border-zinc-800/80 w-full max-w-5xl lg:max-w-6xl max-h-[92vh] h-[90vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden text-white font-sans z-10"
       >
         {/* Title Header */}
         <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-4 bg-zinc-950/40">
@@ -611,7 +615,7 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                         <span className="text-xs text-zinc-500">No tracks matches the current filter.</span>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 gap-2.5 pb-2">
+                      <div className="grid grid-cols-1 gap-4 pb-4">
                         {[...beats]
                           .filter(b => adminGenreFilter === 'All' || b.genre === adminGenreFilter)
                           .sort((a, b) => {
@@ -628,56 +632,86 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                           .map((beat, idx) => (
                           <div 
                             key={beat.id}
-                            className="flex items-center justify-between bg-zinc-950/40 hover:bg-zinc-950/80 border border-zinc-850/60 hover:border-zinc-800 px-4 py-3 rounded-2xl transition-all gap-3"
+                            className="bg-zinc-950/80 hover:bg-zinc-900/60 border border-zinc-800/90 hover:border-zinc-700 p-5 sm:p-6 rounded-2xl transition-all shadow-md flex flex-col md:flex-row md:items-center justify-between gap-5"
                           >
-                            <div className="flex items-center gap-3 min-w-0">
+                            {/* Left: Artwork + Big Title + Meta Specs */}
+                            <div className="flex items-start sm:items-center gap-4 sm:gap-5 min-w-0 flex-grow">
                               {/* Rank Indicator */}
                               {adminSortBy === 'plays' && (
-                                <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-mono font-black flex-shrink-0 ${
+                                <span className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-mono font-black flex-shrink-0 ${
                                   idx === 0 
-                                    ? 'bg-amber-400 text-black shadow-md shadow-amber-500/20' 
+                                    ? 'bg-amber-400 text-black shadow-lg shadow-amber-500/30' 
                                     : idx < 3 
-                                    ? 'bg-zinc-800 text-amber-300 border border-amber-400/30' 
+                                    ? 'bg-zinc-800 text-amber-300 border border-amber-400/40' 
                                     : 'bg-zinc-900 text-zinc-400 border border-zinc-800'
                                 }`}>
                                   #{idx + 1}
                                 </span>
                               )}
 
+                              {/* Large Artwork */}
                               <img 
                                 src={beat.artwork} 
                                 alt={beat.title} 
-                                className="w-10 h-10 rounded-xl object-cover border border-zinc-800 flex-shrink-0"
+                                className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl object-cover border border-zinc-800 flex-shrink-0 shadow-lg"
                                 referrerPolicy="no-referrer"
                               />
-                              <div className="min-w-0">
-                                <h5 className="text-xs text-zinc-100 font-sans font-bold truncate leading-none">{beat.title}</h5>
-                                <p className="text-[9px] text-zinc-500 font-mono truncate leading-none pt-1">
-                                  {beat.genre} • {beat.bpm} BPM • {beat.duration} • {beat.key}
-                                </p>
+
+                              {/* Clean, Readable Track Information */}
+                              <div className="min-w-0 flex-grow space-y-1.5">
+                                <div className="flex flex-wrap items-baseline gap-2">
+                                  <h5 className="text-lg sm:text-xl text-white font-sans font-bold tracking-tight truncate">
+                                    {beat.title}
+                                  </h5>
+                                  <span className="text-xs font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                                    ₹{(beat.priceBasic || 999).toLocaleString()}
+                                  </span>
+                                </div>
+
+                                {/* Clean Metadata Line: BPM, Key, Genre */}
+                                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-zinc-300">
+                                  <span className="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 text-zinc-200">
+                                    ⚡ {beat.bpm} BPM
+                                  </span>
+                                  <span className="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 text-zinc-200">
+                                    🎹 {beat.key}
+                                  </span>
+                                  <span className="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 text-purple-300 font-sans uppercase tracking-wider text-[11px] font-semibold">
+                                    🏷️ {beat.genre}
+                                  </span>
+                                  <span className="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-800 text-zinc-400">
+                                    ⏱ {beat.duration}
+                                  </span>
+                                </div>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              {/* Play count badge visible in Admin Panel */}
-                              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-400/10 border border-amber-400/25 text-amber-400 font-mono text-[10px] font-bold">
-                                <Headphones className="w-3 h-3 text-amber-400" />
+                            {/* Right: Plays & Big Action Buttons */}
+                            <div className="flex items-center justify-between md:justify-end gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-zinc-850/80 flex-shrink-0">
+                              {/* Total Plays Counter */}
+                              <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400 font-mono text-xs font-bold">
+                                <Headphones className="w-4 h-4 text-amber-400 flex-shrink-0" />
                                 <span>{(beat.plays || 0).toLocaleString()} plays</span>
                               </div>
 
+                              {/* Big Edit Button */}
                               <button
                                 onClick={() => handleEditClick(beat)}
-                                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 hover:text-white border border-zinc-700 font-sans font-bold text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
                                 title="Edit Beat Parameters"
                               >
-                                <Edit2 className="w-3.5 h-3.5" />
+                                <Edit2 className="w-3.5 h-3.5 text-amber-400" />
+                                <span>Edit</span>
                               </button>
+
+                              {/* Big Delete Button */}
                               <button
                                 onClick={() => handleDeleteClick(beat.id)}
-                                className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-955/10 transition-colors"
-                                title="Delete Beat From DB"
+                                className="px-4 py-2.5 rounded-xl bg-rose-950/50 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-800/60 hover:border-rose-500 font-sans font-bold text-xs flex items-center gap-2 transition-all shadow-sm active:scale-95 cursor-pointer"
+                                title="Delete Beat"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
+                                <span>Delete</span>
                               </button>
                             </div>
                           </div>
@@ -1001,36 +1035,55 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
                         />
                       </div>
 
-                      {/* Basic Price */}
+                      {/* MP3 License Price */}
                       <div>
-                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 leading-none">Basic License ($)</label>
+                        <label className="block text-[9px] font-mono text-amber-400 uppercase tracking-widest mb-1 leading-none">MP3 License (₹)</label>
                         <input 
                           type="number" 
                           value={formData.priceBasic}
                           onChange={(e) => setFormData({ ...formData, priceBasic: Number(e.target.value) })}
-                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                          placeholder="999"
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 font-mono text-zinc-100"
+                          required
                         />
                       </div>
 
-                      {/* Premium Price */}
+                      {/* WAV License Price */}
                       <div>
-                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 leading-none">Premium License ($)</label>
+                        <label className="block text-[9px] font-mono text-amber-400 uppercase tracking-widest mb-1 leading-none">WAV License (₹)</label>
                         <input 
                           type="number" 
                           value={formData.pricePremium}
                           onChange={(e) => setFormData({ ...formData, pricePremium: Number(e.target.value) })}
-                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                          placeholder="1999"
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-amber-400 font-mono text-zinc-100"
+                          required
                         />
                       </div>
 
-                      {/* Unlimited Price */}
+                      {/* WAV + Stems License Price */}
                       <div>
-                        <label className="block text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 leading-none">Unlimited License ($)</label>
+                        <label className="block text-[9px] font-mono text-purple-400 uppercase tracking-widest mb-1 leading-none">WAV + Stems License (₹)</label>
                         <input 
                           type="number" 
                           value={formData.priceUnlimited}
                           onChange={(e) => setFormData({ ...formData, priceUnlimited: Number(e.target.value) })}
-                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono"
+                          placeholder="3999"
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 font-mono text-zinc-100"
+                          required
+                        />
+                      </div>
+
+                      {/* Exclusive License Price */}
+                      <div>
+                        <label className="block text-[9px] font-mono text-yellow-400 uppercase tracking-widest mb-1 leading-none">Exclusive License (₹)</label>
+                        <input 
+                          type="number" 
+                          value={formData.priceExclusive}
+                          onChange={(e) => setFormData({ ...formData, priceExclusive: Number(e.target.value) })}
+                          placeholder="9999"
+                          className="w-full bg-zinc-950 border border-zinc-850 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-yellow-400 font-mono text-yellow-200 font-bold"
+                          required
                         />
                       </div>
 
@@ -1080,46 +1133,56 @@ export default function AdminPanel({ onCatalogRefresh, isOpen, onClose }: AdminP
 
       {/* Custom Delete Confirmation Modal */}
       <AnimatePresence>
-        {deleteConfirmId && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setDeleteConfirmId(null)}
-              className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl z-10"
-            >
-              <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-rose-500">
-                <Trash2 className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold font-sans tracking-tight text-white mb-2">Delete Instrumental?</h3>
-              <p className="text-sm text-zinc-400 font-sans leading-relaxed mb-8">
-                Are you strictly sure you want to delete this beat from the server? This action is <span className="text-rose-400 font-bold">irreversible</span>.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteConfirmId(null)}
-                  className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs uppercase tracking-wider transition-all"
-                >
-                  No, Keep It
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  disabled={isSubmitting}
-                  className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-rose-900/20 disabled:opacity-50"
-                >
-                  {isSubmitting ? 'Purging...' : 'Yes, Delete'}
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+        {deleteConfirmId && (() => {
+          const beatToDelete = beats.find(b => b.id === deleteConfirmId);
+          return (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setDeleteConfirmId(null)}
+                className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                className="relative bg-zinc-900 border border-zinc-800 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl z-10"
+              >
+                <div className="w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-5 text-rose-500">
+                  <Trash2 className="w-8 h-8" />
+                </div>
+                <h3 className="text-xl font-bold font-sans tracking-tight text-white mb-2">
+                  Delete {beatToDelete ? `"${beatToDelete.title}"` : 'Instrumental'}?
+                </h3>
+                {beatToDelete && (
+                  <p className="text-xs text-amber-400 font-mono mb-3">
+                    {beatToDelete.genre} • {beatToDelete.bpm} BPM • {beatToDelete.key}
+                  </p>
+                )}
+                <p className="text-sm text-zinc-400 font-sans leading-relaxed mb-6">
+                  Are you strictly sure you want to delete this track from Firestore? This action cannot be undone.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setDeleteConfirmId(null)}
+                    className="flex-1 py-3 rounded-xl bg-zinc-800 hover:bg-zinc-750 text-zinc-300 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
+                  >
+                    No, Keep It
+                  </button>
+                  <button
+                    onClick={confirmDelete}
+                    disabled={isSubmitting}
+                    className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-rose-900/20 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmitting ? 'Purging...' : 'Yes, Delete Track'}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );

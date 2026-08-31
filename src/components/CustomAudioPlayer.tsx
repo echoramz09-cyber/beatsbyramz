@@ -5,9 +5,11 @@ import AudioVisualizer from './AudioVisualizer';
 import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio, Tag, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface CustomAudioPlayerProps {}
+interface CustomAudioPlayerProps {
+  onOpenLicense?: (track: Track) => void;
+}
 
-export default function CustomAudioPlayer() {
+export default function CustomAudioPlayer({ onOpenLicense }: CustomAudioPlayerProps) {
   const [playerState, setPlayerState] = useState({
     isPlaying: false,
     currentTrack: null as Track | null,
@@ -40,6 +42,12 @@ export default function CustomAudioPlayer() {
     if (!playerState.currentTrack) return;
     
     const track = playerState.currentTrack;
+
+    if (onOpenLicense) {
+      onOpenLicense(track);
+      return;
+    }
+    
     const info = `I'm interested in licensing: "${track.title}"\nGenre: ${track.genre}\nTempo: ${track.bpm} BPM\nDuration: ${track.duration}`;
     
     // Copy to clipboard
@@ -171,10 +179,10 @@ export default function CustomAudioPlayer() {
           <div className="flex items-center gap-2 flex-shrink-0">
             <button 
               onClick={handleBuyNow}
-              className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all cursor-pointer"
             >
               <Tag className="w-3.5 h-3.5 fill-black" />
-              <span>Buy</span>
+              <span>₹{(currentTrack.priceBasic || 999).toLocaleString()} • Buy</span>
             </button>
 
             {/* Volume toggle */}
