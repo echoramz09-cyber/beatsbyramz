@@ -113,25 +113,28 @@ export default function CustomAudioPlayer() {
   return (
     <motion.div 
       id="sticky-audio-player" 
-      initial={{ y: 80, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: 'spring', damping: 25, stiffness: 180 }}
-      className="fixed bottom-0 left-0 right-0 bg-zinc-950 md:bg-zinc-950/95 md:backdrop-blur-lg border-t border-zinc-900 px-4 py-4 md:px-6 md:py-4 z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]"
+      initial={{ y: 80, opacity: 0, x: '-50%' }}
+      animate={{ y: 0, opacity: 1, x: '-50%' }}
+      exit={{ y: 80, opacity: 0, x: '-50%' }}
+      transition={{ type: 'spring', damping: 26, stiffness: 200 }}
+      className="fixed bottom-3 sm:bottom-5 left-1/2 w-[94%] sm:w-[88%] md:w-[680px] max-w-[700px] bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/90 rounded-2xl p-3 md:p-3.5 z-50 shadow-[0_14px_40px_rgba(0,0,0,0.85),0_0_25px_rgba(234,179,8,0.12)]"
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col gap-2.5 w-full">
         
-        {/* Top: Active Track Info & Basic Controls (Mobile Layout) */}
-        <div className="flex items-center justify-between w-full md:w-1/3 gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+        {/* Main Row: Track Info + Play/Pause Controls + Buy Action */}
+        <div className="flex items-center justify-between gap-3 w-full">
+          
+          {/* Left: Track Artwork & Info */}
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <img 
               src={currentTrack.artwork} 
               alt={currentTrack.title} 
-              className="w-10 h-10 md:w-12 md:h-12 rounded-xl object-cover border border-zinc-850 flex-shrink-0 animate-spin-slow"
+              className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover border border-zinc-800 flex-shrink-0 animate-spin-slow"
               style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
               referrerPolicy="no-referrer"
             />
-            <div className="min-w-0">
-              <h4 className="text-white text-sm md:text-sm font-sans font-bold truncate tracking-tight">
+            <div className="min-w-0 pr-1">
+              <h4 className="text-white text-xs md:text-sm font-sans font-bold truncate tracking-tight">
                 {currentTrack.title}
               </h4>
               <p className="text-[10px] text-zinc-500 font-mono truncate">
@@ -140,56 +143,74 @@ export default function CustomAudioPlayer() {
             </div>
           </div>
 
-          {/* Quick Play/Pause for Mobile Right Side */}
-          <div className="flex md:hidden items-center gap-3">
+          {/* Center: Playback Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <button
+              onClick={handleRestart}
+              className="hidden sm:flex p-1.5 text-zinc-500 hover:text-zinc-300 transition-colors"
+              title="Restart"
+              aria-label="Restart Beat"
+            >
+              <RotateCcw className="w-3.5 h-3.5 scale-x-[-1]" />
+            </button>
+
             <button
               onClick={handlePlayPause}
-              className="w-11 h-11 rounded-full bg-white text-zinc-950 flex items-center justify-center transition-all active:scale-90"
+              className="w-10 h-10 rounded-full bg-amber-400 hover:bg-yellow-300 hover:scale-105 active:scale-95 text-black flex items-center justify-center transition-all shadow-md shadow-amber-500/25"
+              aria-label={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? (
-                <Pause className="w-5 h-5 fill-zinc-950" />
-              ) : (
-                <Play className="w-5 h-5 fill-zinc-950 translate-x-0.5" />
-              )}
+              {isPlaying ? <Pause className="w-4 h-4 fill-black" /> : <Play className="w-4 h-4 fill-black translate-x-0.5" />}
             </button>
+          </div>
+
+          {/* Right: Buy Button & Volume */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button 
+              onClick={handleBuyNow}
+              className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+            >
+              <Tag className="w-3.5 h-3.5 fill-black" />
+              <span>Buy</span>
+            </button>
+
+            {/* Volume toggle */}
+            <div className="hidden md:flex items-center gap-1.5 pl-1">
+              <button 
+                onClick={handleMuteToggle} 
+                className="text-zinc-500 hover:text-zinc-200 transition-colors"
+                aria-label="Mute / Unmute"
+              >
+                {isMuted || volume === 0 ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+              </button>
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.05" 
+                value={isMuted ? 0 : volume} 
+                onChange={handleVolumeChange} 
+                className="w-14 accent-amber-400 h-1 bg-zinc-900 rounded-lg cursor-pointer" 
+              />
+            </div>
           </div>
         </div>
 
-        {/* Middle Section: Progress & Detailed Controls (Desktop Focused) */}
-        <div className="flex flex-col items-center gap-2 w-full md:w-2/5">
-          {/* Desktop Controls */}
-          <div className="hidden md:flex items-center gap-6">
-            <button
-              onClick={() => setIsLooping(!isLooping)}
-              className={`p-1.5 rounded-lg transition-colors ${
-                isLooping ? 'text-amber-400 bg-amber-950/40' : 'text-zinc-650 hover:text-zinc-400'
-              }`}
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+        {/* Timeline & Full-Width Equalizer Visualizer */}
+        <div className="flex items-center gap-2.5 w-full text-zinc-500 text-[10px] font-mono group px-1">
+          <span className="w-7 text-right">{formattedProgress}</span>
+          
+          <div className="flex-1 relative flex flex-col justify-center gap-1">
+            {/* Audio Visualizer Waveform spanning the exact same width as timeline with energetic beat height */}
+            <div className="w-full flex items-center justify-center h-6 sm:h-7 overflow-hidden rounded-md bg-black/25 px-1">
+              <AudioVisualizer 
+                barWidth={3} 
+                gap={2.5} 
+                className="w-full h-6 sm:h-7" 
+              />
+            </div>
 
-            <button
-              onClick={handlePlayPause}
-              className="w-11 h-11 rounded-full bg-amber-400 hover:bg-yellow-300 hover:scale-105 active:scale-95 text-black flex items-center justify-center transition-all shadow-lg shadow-amber-500/20"
-            >
-              {isPlaying ? <Pause className="w-5 h-5 fill-black" /> : <Play className="w-5 h-5 fill-black translate-x-0.5" />}
-            </button>
-
-            <button
-              onClick={handleRestart}
-              className="p-1.5 text-zinc-650 hover:text-zinc-400 transition-all"
-            >
-              <RotateCcw className="w-4 h-4 scale-x-[-1]" />
-            </button>
-          </div>
-
-          {/* Progress Slider (Unified) */}
-          <div className="flex flex-col items-center w-full gap-1">
-            <AudioVisualizer className="h-4 md:h-5 opacity-70 w-28 md:w-36" />
-            
-            <div className="flex items-center gap-3 w-full text-zinc-500 text-[10px] font-mono group">
-              <span className="hidden md:inline">{formattedProgress}</span>
-              <div className="flex-1 relative flex items-center h-6">
+            {/* Scrubber Progress Bar */}
+            <div className="relative flex items-center h-3">
               <input 
                 type="range"
                 min="0"
@@ -198,8 +219,9 @@ export default function CustomAudioPlayer() {
                 value={progress}
                 onChange={handleSeek}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                aria-label="Seek track position"
               />
-              <div className="w-full h-1.5 md:h-1 bg-zinc-900 rounded-full overflow-hidden relative">
+              <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden relative">
                 <motion.div 
                   className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-yellow-400 via-amber-400 to-amber-500"
                   initial={false}
@@ -207,60 +229,32 @@ export default function CustomAudioPlayer() {
                 />
               </div>
               <div 
-                className="absolute w-3 h-3 md:w-2.5 md:h-2.5 bg-amber-300 rounded-full shadow-[0_0_10px_rgba(234,179,8,0.8)] opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity pointer-events-none"
-                style={{ left: `calc(${progressPercent}% - 6px)` }}
+                className="absolute w-2.5 h-2.5 bg-amber-300 rounded-full shadow-[0_0_8px_rgba(234,179,8,0.9)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pointer-events-none"
+                style={{ left: `calc(${progressPercent}% - 5px)` }}
               />
             </div>
-            <span className="text-zinc-300 md:text-zinc-500">{currentTrack.duration}</span>
           </div>
+
+          <span className="w-7 text-zinc-400">{currentTrack.duration}</span>
         </div>
+
       </div>
 
-        {/* Right Section: Actions */}
-        <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-1/3">
-          {/* Mobile Loop/Restart Controls (Moved here if needed or just simplify) */}
-          <div className="flex md:hidden items-center gap-2">
-             <button
-              onClick={handleRestart}
-              className="p-3 text-zinc-400 bg-zinc-900 rounded-xl"
-            >
-              <RotateCcw className="w-4 h-4 scale-x-[-1]" />
-            </button>
-          </div>
-
-          <button 
-            onClick={handleBuyNow}
-            className="flex-grow md:flex-none flex items-center justify-center gap-3 px-6 py-4 md:py-2.5 rounded-2xl md:rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-xs md:text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
-          >
-            <Tag className="w-4 h-4 fill-black" />
-            Buy Now
-          </button>
-
-          {/* Desktop Volume */}
-          <div className="hidden lg:flex items-center gap-2">
-            <button onClick={handleMuteToggle} className="text-zinc-400 hover:text-white">
-              {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-            </button>
-            <input type="range" min="0" max="1" step="0.05" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="w-20 accent-amber-400 h-1 bg-zinc-900 rounded-lg" />
-          </div>
-        </div>
-      </div>
       {/* Copy Confirmation Toast */}
       <AnimatePresence>
         {showCopyPopup && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
             animate={{ opacity: 1, y: -20, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             style={{ left: '50%', x: '-50%' }}
-            className="fixed bottom-[110px] md:bottom-[100px] z-[100] px-6 py-3 bg-zinc-900 border border-amber-500/30 text-white rounded-2xl shadow-2xl flex items-center gap-3 w-[280px]"
+            className="absolute -top-14 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 bg-zinc-900 border border-amber-500/40 text-white rounded-xl shadow-2xl flex items-center gap-2.5 whitespace-nowrap"
           >
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
-              <Tag className="w-4 h-4" />
+            <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400">
+              <Tag className="w-3 h-3" />
             </div>
             <div className="font-sans">
-              <p className="text-[10px] font-black text-white uppercase tracking-wider">Beat Details Copied!</p>
-              <p className="text-[10px] text-zinc-400">Paste in Instagram DMs</p>
+              <p className="text-[10px] font-black text-white uppercase tracking-wider">Details Copied! Opening IG DM</p>
             </div>
           </motion.div>
         )}

@@ -3,6 +3,7 @@ import { Track } from '../types';
 import { Genre } from '../lib/genreService';
 import { Play, Pause, Tag, Music, Headphones, ChevronLeft, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import AudioVisualizer from './AudioVisualizer';
 
 interface TrackListProps {
   tracks: Track[];
@@ -211,7 +212,12 @@ export default function TrackList({
                             <div className="md:col-span-3 pl-0 md:pl-4 flex-grow min-w-0">
                               <div className="flex items-center gap-2">
                                 <h4 className="text-white text-base md:text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
-                                {!isPlayingRow && (
+                                {isPlayingRow ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-400/15 border border-amber-400/30 text-[9px] font-mono font-bold text-amber-400 uppercase tracking-wider">
+                                    <AudioVisualizer barsCount={6} barWidth={2} gap={1.5} className="h-2.5 w-6 opacity-95" />
+                                    Playing
+                                  </span>
+                                ) : (
                                   <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-mono text-zinc-500 group-hover:text-amber-400 transition-colors uppercase tracking-wider">
                                     • click to play
                                   </span>
@@ -221,9 +227,15 @@ export default function TrackList({
                               
                               {/* Metadata Row (Mobile Only) */}
                               <div className="flex md:hidden items-center gap-2 mt-2 text-[10px] font-mono text-zinc-400 flex-wrap">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/20 font-bold">
-                                  <Play className="w-2 h-2 fill-amber-400" /> Click to play
-                                </span>
+                                {isPlayingRow ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-400/15 text-amber-400 border border-amber-400/30 font-bold">
+                                    <AudioVisualizer barsCount={5} barWidth={2} gap={1.5} className="h-2.5 w-5" /> Playing
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/20 font-bold">
+                                    <Play className="w-2 h-2 fill-amber-400" /> Click to play
+                                  </span>
+                                )}
                                 <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.bpm} BPM</span>
                                 <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.key}</span>
                                 <span>{track.duration}</span>
