@@ -185,7 +185,7 @@ export default function CustomAudioPlayer() {
 
           {/* Progress Slider (Unified) */}
           <div className="flex flex-col items-center w-full gap-1">
-            <AudioVisualizer className="h-6 md:h-8 opacity-40 max-w-sm" />
+            <AudioVisualizer className="h-4 md:h-5 opacity-70 w-28 md:w-36" />
             
             <div className="flex items-center gap-3 w-full text-zinc-500 text-[10px] font-mono group">
               <span className="hidden md:inline">{formattedProgress}</span>

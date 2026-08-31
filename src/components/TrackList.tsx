@@ -68,8 +68,15 @@ export default function TrackList({
     <section id="beats-section" className="py-20 px-6 max-w-7xl mx-auto space-y-10">
       
       {/* Catalog Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-6 border-b border-zinc-900">
-        <div className="space-y-1">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-zinc-900">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h2 className="text-xl md:text-2xl font-sans font-black text-white uppercase tracking-tight">Instrumental Catalog</h2>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/25 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider shadow-sm">
+              <Play className="w-2.5 h-2.5 fill-amber-400" />
+              Click beat to play
+            </span>
+          </div>
           <p className="text-xs text-zinc-500 font-sans font-bold uppercase tracking-wider">Filter by mood, search tags, or listen to high-quality beat previews.</p>
         </div>
       </div>
@@ -103,8 +110,8 @@ export default function TrackList({
         
         {/* Table Headline Descriptors - Desktop Only */ }
         <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 border-b border-zinc-900 text-zinc-550 font-sans text-[10px] uppercase tracking-widest font-black">
-          <div className="col-span-1 text-center">Preview</div>
-          <div className="col-span-3 pl-4">Title</div>
+          <div className="col-span-1 text-center text-amber-400/90 font-mono">Play</div>
+          <div className="col-span-3 pl-4">Title • <span className="text-zinc-600 font-mono font-normal">Click beat to play</span></div>
           <div className="col-span-2 text-center">BPM • Time</div>
           <div className="col-span-1 text-center">Key</div>
           <div className="col-span-2 text-center">Buy Now</div>
@@ -202,11 +209,21 @@ export default function TrackList({
 
                             {/* Title & Info */}
                             <div className="md:col-span-3 pl-0 md:pl-4 flex-grow min-w-0">
-                              <h4 className="text-white text-base md:text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-white text-base md:text-sm font-sans font-bold truncate tracking-tight">{track.title}</h4>
+                                {!isPlayingRow && (
+                                  <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-mono text-zinc-500 group-hover:text-amber-400 transition-colors uppercase tracking-wider">
+                                    • click to play
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-xs md:text-[11px] text-zinc-500 font-sans truncate mt-1 md:mt-0.5">{track.tagline}</p>
                               
                               {/* Metadata Row (Mobile Only) */}
-                              <div className="flex md:hidden items-center gap-3 mt-2 text-[10px] font-mono text-zinc-400">
+                              <div className="flex md:hidden items-center gap-2 mt-2 text-[10px] font-mono text-zinc-400 flex-wrap">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-400/10 text-amber-400 border border-amber-400/20 font-bold">
+                                  <Play className="w-2 h-2 fill-amber-400" /> Click to play
+                                </span>
                                 <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.bpm} BPM</span>
                                 <span className="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">{track.key}</span>
                                 <span>{track.duration}</span>

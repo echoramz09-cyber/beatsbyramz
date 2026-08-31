@@ -49,22 +49,29 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="group relative flex-shrink-0 w-[160px] sm:w-auto snap-center"
               >
-                <div className={`relative bg-zinc-900/50 border border-zinc-800 p-3 rounded-2xl transition-all duration-300 ${isActive ? 'ring-1 ring-amber-500/60 bg-zinc-900 shadow-[0_0_15px_rgba(234,179,8,0.15)]' : 'hover:scale-[1.02] hover:bg-zinc-900/80 hover:border-zinc-700'}`}>
+                <div 
+                  onClick={() => onPlayToggle(track)}
+                  className={`relative bg-zinc-900/50 border border-zinc-800 p-3 rounded-2xl transition-all duration-300 cursor-pointer ${isActive ? 'ring-1 ring-amber-500/60 bg-zinc-900 shadow-[0_0_15px_rgba(234,179,8,0.15)]' : 'hover:scale-[1.02] hover:bg-zinc-900/80 hover:border-zinc-700'}`}
+                >
                   
                   {/* Artwork Square */}
                   <div className="relative aspect-square rounded-xl overflow-hidden bg-zinc-950 border border-zinc-850">
                     <img 
                       src={track.artwork} 
-                      alt={track.title}
+                      alt={track.title} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       referrerPolicy="no-referrer"
                     />
                     
                     {/* Hover Overlay */}
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
                       <button
-                        onClick={() => onPlayToggle(track)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onPlayToggle(track);
+                        }}
                         className="w-10 h-10 rounded-full bg-amber-400 hover:bg-yellow-300 text-black flex items-center justify-center shadow-xl transform scale-90 group-hover:scale-100 transition-transform cursor-pointer"
+                        aria-label={isPlayingThis ? 'Pause beat' : 'Play beat'}
                       >
                         {isPlayingThis ? (
                           <Pause className="w-4 h-4 fill-black" />
@@ -72,6 +79,9 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
                           <Play className="w-4 h-4 fill-black translate-x-0.5" />
                         )}
                       </button>
+                      <span className="text-[9px] font-mono font-bold text-amber-300 tracking-wider uppercase">
+                        {isPlayingThis ? 'playing' : 'click to play'}
+                      </span>
                     </div>
 
                     {/* Playing Indicator */}
@@ -86,7 +96,14 @@ export default function Hero({ topTracks, isPlaying, activeTrackId, onPlayToggle
 
                   {/* Minimal Info */}
                   <div className="mt-3 text-left space-y-0.5">
-                    <h4 className="text-[11px] font-sans font-black text-white truncate uppercase tracking-tight">{track.title}</h4>
+                    <div className="flex items-center justify-between gap-1">
+                      <h4 className="text-[11px] font-sans font-black text-white truncate uppercase tracking-tight">{track.title}</h4>
+                      {!isPlayingThis && (
+                        <span className="text-[8px] font-mono text-zinc-550 group-hover:text-amber-400 transition-colors uppercase flex-shrink-0">
+                          play
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center justify-between text-[9px] text-zinc-500 font-mono">
                       <span>{track.bpm} • {track.duration}</span>
                       <span className="lowercase">{track.key}</span>

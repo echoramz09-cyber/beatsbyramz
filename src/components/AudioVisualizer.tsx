@@ -17,8 +17,8 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const BAR_COUNT = 24;
-    const smoothedBars = new Float32Array(BAR_COUNT).fill(4);
+    const BAR_COUNT = 16;
+    const smoothedBars = new Float32Array(BAR_COUNT).fill(3);
     const dataArray = new Uint8Array(128);
 
     let width = 300;
@@ -87,7 +87,7 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
       const now = Date.now() * 0.003;
 
       for (let i = 0; i < BAR_COUNT; i++) {
-        let targetHeight = 4;
+        let targetHeight = 3;
 
         if (isPlaying) {
           if (hasRealFft) {
@@ -96,47 +96,47 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
             const rawVal = dataArray[sampleIdx] || 0;
             const normVal = rawVal / 255;
             
-            // Musical EQ curve shaping: center weighted punch
-            const eqWeight = 0.7 + 0.3 * Math.sin((i / BAR_COUNT) * Math.PI);
-            targetHeight = Math.max(4, normVal * height * 0.72 * eqWeight);
+            // Musical EQ curve shaping: center weighted punch, max 60% of height for sleek look
+            const eqWeight = 0.6 + 0.4 * Math.sin((i / BAR_COUNT) * Math.PI);
+            targetHeight = Math.max(3, normVal * height * 0.55 * eqWeight);
           } else {
-            // Smooth, elegant gentle wave when buffering or loading audio (no violent spikes)
+            // Smooth, elegant gentle wave when buffering or loading audio (subtle and short)
             const wave1 = Math.sin(now * 1.5 + i * 0.35) * 0.5 + 0.5;
             const wave2 = Math.cos(now * 0.8 + i * 0.2) * 0.5 + 0.5;
             const combined = (wave1 * 0.65 + wave2 * 0.35);
-            // Cap at 30% of height so it feels calm, rhythmic and controlled
-            targetHeight = 4 + combined * (height * 0.28);
+            targetHeight = 3 + combined * (height * 0.22);
           }
         } else {
           // Subtle resting ambient pulse when paused
           const restingWave = Math.sin(now * 0.6 + i * 0.4) * 0.5 + 0.5;
-          targetHeight = 3 + restingWave * (height * 0.08);
+          targetHeight = 2.5 + restingWave * (height * 0.08);
         }
 
         // Smooth interpolation between frames for fluid animation
         smoothedBars[i] = smoothedBars[i] * 0.75 + targetHeight * 0.25;
       }
 
-      // Render the bars
-      const gap = 2;
-      const totalGaps = (BAR_COUNT - 1) * gap;
-      const barWidth = Math.max(2, (width - totalGaps) / BAR_COUNT);
+      // Render the bars - centered horizontally in canvas with compact spacing
+      const barWidth = 3;
+      const gap = 2.5;
+      const totalWidth = BAR_COUNT * barWidth + (BAR_COUNT - 1) * gap;
+      const startX = Math.max(0, (width - totalWidth) / 2);
 
       for (let i = 0; i < BAR_COUNT; i++) {
-        const barHeight = Math.min(height - 2, Math.max(3, smoothedBars[i]));
-        const x = i * (barWidth + gap);
+        const barHeight = Math.min(height - 1, Math.max(2.5, smoothedBars[i]));
+        const x = startX + i * (barWidth + gap);
         const y = height - barHeight;
 
         if (isPlaying) {
           const grad = ctx.createLinearGradient(0, height, 0, y);
-          grad.addColorStop(0, 'rgba(180, 120, 10, 0.35)');
+          grad.addColorStop(0, 'rgba(180, 120, 10, 0.3)');
           grad.addColorStop(0.5, color);
           grad.addColorStop(1, 'rgba(253, 224, 71, 0.95)');
 
           ctx.fillStyle = grad;
           
-          if (barHeight > height * 0.5) {
-            ctx.shadowBlur = 8;
+          if (barHeight > height * 0.45) {
+            ctx.shadowBlur = 6;
             ctx.shadowColor = color;
           } else {
             ctx.shadowBlur = 0;
@@ -146,7 +146,7 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
           ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
         }
 
-        const radius = Math.min(barWidth / 2, 3);
+        const radius = 1.5;
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, barHeight, [radius, radius, 0, 0]);
         ctx.fill();
