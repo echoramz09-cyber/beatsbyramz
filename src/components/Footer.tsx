@@ -35,16 +35,28 @@ export default function Footer({ onAdminClick }: FooterProps) {
           <span>© 2026 craxx. All licensing rights reserved.</span>
         </div>
 
-        {onAdminClick && (
-          <button 
-            type="button" 
-            onClick={onAdminClick}
-            className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer group"
+        <div className="flex items-center gap-4">
+          <a 
+            href="https://instagram.com/craxxbeats.india" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 hover:text-amber-400 text-zinc-400 transition-colors"
           >
-            <Shield className="w-3.5 h-3.5 text-amber-500 group-hover:text-amber-400 transition-colors" />
-            <span>Admin Portal</span>
-          </button>
-        )}
+            <Instagram className="w-3.5 h-3.5 text-amber-400" />
+            <span>@craxxbeats.india</span>
+          </a>
+
+          {onAdminClick && (
+            <button 
+              type="button" 
+              onClick={onAdminClick}
+              className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer group"
+            >
+              <Shield className="w-3.5 h-3.5 text-amber-500 group-hover:text-amber-400 transition-colors" />
+              <span>Admin Portal</span>
+            </button>
+          )}
+        </div>
 
         <div className="flex items-center gap-1 font-sans font-bold uppercase tracking-wider">
           <span>Forged in sonic obsidian</span>

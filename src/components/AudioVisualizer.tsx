@@ -17,19 +17,47 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Handle resizing on first frame
-    let width = canvas.width = canvas.offsetWidth;
-    let height = canvas.height = canvas.offsetHeight;
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (canvas) {
-        width = canvas.width = canvas.offsetWidth;
-        height = canvas.height = canvas.offsetHeight;
-      }
-    });
-    resizeObserver.observe(canvas);
-
+    const BAR_COUNT = 24;
+    const smoothedBars = new Float32Array(BAR_COUNT).fill(4);
     const dataArray = new Uint8Array(128);
+
+    let width = 300;
+    let height = 40;
+    let resizeRafId: number | null = null;
+
+    const applyCanvasDimensions = (newWidth: number, newHeight: number) => {
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      const targetWidth = Math.max(10, Math.floor(newWidth));
+      const targetHeight = Math.max(10, Math.floor(newHeight));
+
+      if (canvas.width !== targetWidth * dpr || canvas.height !== targetHeight * dpr) {
+        canvas.width = targetWidth * dpr;
+        canvas.height = targetHeight * dpr;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      width = targetWidth;
+      height = targetHeight;
+    };
+
+    const initialRect = canvas.getBoundingClientRect();
+    applyCanvasDimensions(initialRect.width || 300, initialRect.height || 40);
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (!entries || entries.length === 0) return;
+      const entry = entries[0];
+      const contentWidth = entry.contentRect.width;
+      const contentHeight = entry.contentRect.height;
+
+      if (resizeRafId !== null) {
+        cancelAnimationFrame(resizeRafId);
+      }
+      resizeRafId = requestAnimationFrame(() => {
+        applyCanvasDimensions(contentWidth, contentHeight);
+      });
+    });
+
+    resizeObserver.observe(canvas);
 
     const draw = () => {
       animationRef.current = requestAnimationFrame(draw);
@@ -39,76 +67,89 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
 
       ctx.clearRect(0, 0, width, height);
 
+      let hasRealFft = false;
+
       if (analyser && isPlaying) {
-        analyser.getByteFrequencyData(dataArray);
-
-        // Check if dataArray has any non-zero frequency values
-        let hasRealData = false;
-        for (let i = 0; i < 32; i++) {
-          if (dataArray[i] > 0) {
-            hasRealData = true;
-            break;
+        try {
+          analyser.getByteFrequencyData(dataArray);
+          // Check for genuine audio energy in the primary spectrum
+          for (let i = 0; i < 32; i++) {
+            if (dataArray[i] > 10) {
+              hasRealFft = true;
+              break;
+            }
           }
+        } catch (e) {
+          hasRealFft = false;
+        }
+      }
+
+      const now = Date.now() * 0.003;
+
+      for (let i = 0; i < BAR_COUNT; i++) {
+        let targetHeight = 4;
+
+        if (isPlaying) {
+          if (hasRealFft) {
+            // Real audio spectrum data with EQ shaping (boost low/mid, gently taper high)
+            const sampleIdx = Math.min(dataArray.length - 1, Math.floor(Math.pow(i / BAR_COUNT, 1.4) * 48));
+            const rawVal = dataArray[sampleIdx] || 0;
+            const normVal = rawVal / 255;
+            
+            // Musical EQ curve shaping: center weighted punch
+            const eqWeight = 0.7 + 0.3 * Math.sin((i / BAR_COUNT) * Math.PI);
+            targetHeight = Math.max(4, normVal * height * 0.72 * eqWeight);
+          } else {
+            // Smooth, elegant gentle wave when buffering or loading audio (no violent spikes)
+            const wave1 = Math.sin(now * 1.5 + i * 0.35) * 0.5 + 0.5;
+            const wave2 = Math.cos(now * 0.8 + i * 0.2) * 0.5 + 0.5;
+            const combined = (wave1 * 0.65 + wave2 * 0.35);
+            // Cap at 30% of height so it feels calm, rhythmic and controlled
+            targetHeight = 4 + combined * (height * 0.28);
+          }
+        } else {
+          // Subtle resting ambient pulse when paused
+          const restingWave = Math.sin(now * 0.6 + i * 0.4) * 0.5 + 0.5;
+          targetHeight = 3 + restingWave * (height * 0.08);
         }
 
-        // If no real FFT data available (e.g. cross-domain CORS media restriction),
-        // synthesize dynamic beat frequencies based on time and bar index
-        if (!hasRealData) {
-          const now = Date.now() * 0.009;
-          for (let i = 0; i < 24; i++) {
-            const pulse = Math.abs(Math.sin(now * 1.8 + i * 0.4)) * 170 + Math.cos(now * 0.9 + i * 0.2) * 45;
-            dataArray[i * 2] = Math.min(255, Math.max(15, Math.floor(pulse)));
-          }
-        }
+        // Smooth interpolation between frames for fluid animation
+        smoothedBars[i] = smoothedBars[i] * 0.75 + targetHeight * 0.25;
+      }
 
-        // Draw dynamic neon bars
-        const barWidth = (width / 24) - 2;
-        let x = 0;
+      // Render the bars
+      const gap = 2;
+      const totalGaps = (BAR_COUNT - 1) * gap;
+      const barWidth = Math.max(2, (width - totalGaps) / BAR_COUNT);
 
-        for (let i = 0; i < 24; i++) {
-          // Average some values to look cleaner
-          const byteVal = dataArray[i * 2] || 0;
-          const percentage = byteVal / 255;
-          const barHeight = Math.max(4, percentage * height * 0.95);
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const barHeight = Math.min(height - 2, Math.max(3, smoothedBars[i]));
+        const x = i * (barWidth + gap);
+        const y = height - barHeight;
 
-          // Build gradient
-          const grad = ctx.createLinearGradient(0, height, 0, height - barHeight);
-          grad.addColorStop(0, 'rgba(180, 120, 10, 0.4)'); // Warm amber base
-          grad.addColorStop(0.5, color);                   // Metallic gold accent
-          grad.addColorStop(1, 'rgba(253, 224, 71, 0.95)'); // Bright glowing gold top
+        if (isPlaying) {
+          const grad = ctx.createLinearGradient(0, height, 0, y);
+          grad.addColorStop(0, 'rgba(180, 120, 10, 0.35)');
+          grad.addColorStop(0.5, color);
+          grad.addColorStop(1, 'rgba(253, 224, 71, 0.95)');
 
           ctx.fillStyle = grad;
           
-          // Draw rounded bars
-          ctx.beginPath();
-          ctx.roundRect(x, height - barHeight, barWidth, barHeight, [4, 4, 0, 0]);
-          ctx.fill();
-
-          // Add a subtle glow on hit
-          if (percentage > 0.6) {
-            ctx.shadowBlur = 12;
+          if (barHeight > height * 0.5) {
+            ctx.shadowBlur = 8;
             ctx.shadowColor = color;
           } else {
             ctx.shadowBlur = 0;
           }
+        } else {
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+        }
 
-          x += barWidth + 2;
-        }
-      } else {
-        // Draw flat rhythmic standby line
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-        const barWidth = (width / 24) - 2;
-        let x = 0;
-        for (let i = 0; i < 24; i++) {
-          // Simulate subtle standby heartbeat
-          const time = Date.now() * 0.003;
-          const offsetHeight = 4 + Math.sin(time + i * 0.5) * 2;
-          ctx.beginPath();
-          ctx.roundRect(x, height - offsetHeight, barWidth, offsetHeight, [2, 2, 0, 0]);
-          ctx.fill();
-          x += barWidth + 2;
-        }
+        const radius = Math.min(barWidth / 2, 3);
+        ctx.beginPath();
+        ctx.roundRect(x, y, barWidth, barHeight, [radius, radius, 0, 0]);
+        ctx.fill();
       }
     };
 
@@ -118,6 +159,9 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      if (resizeRafId !== null) {
+        cancelAnimationFrame(resizeRafId);
+      }
       resizeObserver.disconnect();
     };
   }, [color]);
@@ -126,7 +170,7 @@ export default function AudioVisualizer({ className = '', color = 'rgba(234, 179
     <canvas 
       ref={canvasRef} 
       id="equalizer-canvas"
-      className={`w-full h-full block opacity-85 hover:opacity-100 transition-opacity duration-300 ${className}`} 
+      className={`w-full h-full block opacity-90 hover:opacity-100 transition-opacity duration-300 ${className}`} 
     />
   );
 }

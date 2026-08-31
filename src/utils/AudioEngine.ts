@@ -5,27 +5,53 @@ class AudioEngineClass {
   private analyser: AnalyserNode | null = null;
   private masterGain: GainNode | null = null;
   
-  private trackerInterval: any = null;
   private isRunning = false;
   private currentTrack: Track | null = null;
   private playbackPosition = 0; // in seconds
-  private lastScheduledTime = 0;
-  private stepDuration = 0.15; // default for 100 bpm 16th notes
-  private currentStep = 0;
-  private lookAheadTime = 0.1; // 100ms
-  private scheduleAheadTime = 0.2; // 200ms
-  private nextNoteTime = 0.0;
-  
   private volume = 0.8;
   
   private audioEl: HTMLAudioElement | null = null;
   private mediaSource: MediaElementAudioSourceNode | null = null;
+  private isUnlocked = false;
 
   // Subscribers for state changes
   private stateChangeCallbacks: Set<(state: any) => void> = new Set();
 
   constructor() {
-    // Lazy initialized on first user interaction to satisfy browser policies
+    // Set up global touch/click audio unlocking for mobile devices (iOS Safari / Android)
+    if (typeof window !== 'undefined') {
+      const unlockEvents = ['touchstart', 'touchend', 'click', 'keydown'];
+      const unlockHandler = () => {
+        this.unlockAudio();
+        unlockEvents.forEach(evt => window.removeEventListener(evt, unlockHandler));
+      };
+      unlockEvents.forEach(evt => window.addEventListener(evt, unlockHandler, { once: true, passive: true }));
+    }
+  }
+
+  public unlockAudio() {
+    if (this.isUnlocked) return;
+    this.initContext();
+    this.initAudioElement();
+
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+
+    // Mobile audio silent buffer unlock
+    if (this.ctx) {
+      try {
+        const buffer = this.ctx.createBuffer(1, 1, 22050);
+        const source = this.ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.ctx.destination);
+        source.start(0);
+      } catch (e) {
+        // Ignore silent buffer failure
+      }
+    }
+
+    this.isUnlocked = true;
   }
 
   private initContext() {
@@ -34,80 +60,147 @@ class AudioEngineClass {
     // Create audio context
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) {
-      console.error('Web Audio API not supported');
+      console.warn('Web Audio API not supported on this browser');
       return;
     }
     
-    this.ctx = new AudioContextClass();
-    this.analyser = this.ctx.createAnalyser();
-    this.analyser.fftSize = 256;
-    
-    this.masterGain = this.ctx.createGain();
-    this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
-    
-    // Connections: Synth Nodes -> MasterGain -> Analyser -> Destination
-    this.masterGain.connect(this.analyser);
-    this.analyser.connect(this.ctx.destination);
+    try {
+      this.ctx = new AudioContextClass();
+      this.analyser = this.ctx.createAnalyser();
+      this.analyser.fftSize = 128;
+      this.analyser.smoothingTimeConstant = 0.8;
+      
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+      
+      // Connections: MediaSource -> MasterGain -> Analyser -> Destination
+      this.masterGain.connect(this.analyser);
+      this.analyser.connect(this.ctx.destination);
+    } catch (err) {
+      console.warn('Could not initialize AudioContext:', err);
+    }
   }
 
   private initAudioElement() {
     if (this.audioEl) return;
-    this.initContext();
-    if (!this.ctx || !this.masterGain) return;
 
     this.audioEl = new Audio();
-    this.audioEl.crossOrigin = "anonymous";
+    this.audioEl.setAttribute('playsinline', 'true');
+    this.audioEl.setAttribute('webkit-playsinline', 'true');
+    (this.audioEl as any).playsInline = true;
+    this.audioEl.preload = 'auto';
     this.audioEl.loop = true;
+    this.audioEl.volume = this.volume;
 
-    try {
-      this.mediaSource = this.ctx.createMediaElementSource(this.audioEl);
-      this.mediaSource.connect(this.masterGain);
-    } catch (e) {
-      console.warn("Failed to create media source node (likely already created or restricted)", e);
+    // Connect to WebAudio graph if supported and not already connected
+    if (this.ctx && this.masterGain && !this.mediaSource) {
+      try {
+        // Try setting crossOrigin for analyzer FFT data
+        this.audioEl.crossOrigin = 'anonymous';
+        this.mediaSource = this.ctx.createMediaElementSource(this.audioEl);
+        this.mediaSource.connect(this.masterGain);
+      } catch (e) {
+        console.warn('Direct media element output enabled (media source bypass):', e);
+      }
     }
 
-    // sync playing state events
+    // Event listeners
     this.audioEl.onplay = () => {
       this.isRunning = true;
       this.notify();
     };
+
+    this.audioEl.onplaying = () => {
+      this.isRunning = true;
+      this.notify();
+    };
+
     this.audioEl.onpause = () => {
       this.isRunning = false;
       this.notify();
     };
+
     this.audioEl.onended = () => {
       this.isRunning = false;
       this.notify();
     };
-    this.audioEl.onerror = () => {
-      console.warn("AudioEngine: Audio source error. Recovering with fallback stream...");
-      if (this.audioEl && !this.audioEl.src.includes('actions.google.com')) {
-        this.audioEl.src = 'https://actions.google.com/sounds/v1/music/synth_funk.ogg';
-        this.audioEl.load();
-        this.audioEl.play().catch(() => {});
-      }
-    };
+
     this.audioEl.ontimeupdate = () => {
       if (this.audioEl && this.currentTrack?.beatUrl) {
         this.playbackPosition = this.audioEl.currentTime;
         this.notify();
       }
     };
+
+    this.audioEl.onerror = () => {
+      console.warn('AudioEngine: Media element error encountered. Attempting recovery without CORS restriction...');
+      if (!this.audioEl || !this.currentTrack?.beatUrl) return;
+
+      const currentSrc = this.audioEl.src;
+      // If anonymous CORS failed, try without crossOrigin
+      if (this.audioEl.hasAttribute('crossOrigin')) {
+        this.audioEl.removeAttribute('crossOrigin');
+        this.audioEl.src = this.normalizeUrl(this.currentTrack.beatUrl);
+        this.audioEl.load();
+        this.audioEl.play().catch(err => {
+          console.warn('Non-CORS fallback playback also failed:', err);
+        });
+      }
+    };
+  }
+
+  private normalizeUrl(rawUrl: string): string {
+    let targetUrl = (rawUrl || '').trim();
+
+    // Data URLs pass through directly
+    if (targetUrl.startsWith('data:audio/')) {
+      return targetUrl;
+    }
+
+    // Common cloud storage transforms
+    if (targetUrl.includes('dropbox.com')) {
+      targetUrl = targetUrl
+        .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+        .replace('?dl=0', '')
+        .replace('&dl=0', '');
+    } else if (targetUrl.includes('drive.google.com')) {
+      const idMatch = targetUrl.match(/\/d\/([^/]+)/);
+      if (idMatch) {
+        targetUrl = `https://docs.google.com/uc?export=download&id=${idMatch[1]}`;
+      }
+    } else if (targetUrl.includes('catbox.moe') && !targetUrl.includes('files.catbox.moe')) {
+      targetUrl = targetUrl.replace('catbox.moe', 'files.catbox.moe');
+    }
+
+    if (targetUrl.startsWith('files.catbox.moe')) {
+      targetUrl = 'https://' + targetUrl;
+    }
+
+    return targetUrl;
   }
 
   public getAnalyser(): AnalyserNode | null {
-    this.initContext();
+    if (!this.ctx) {
+      this.initContext();
+    }
     return this.analyser;
   }
 
   public setVolume(vol: number) {
     this.volume = Math.max(0, Math.min(1, vol));
     if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+      try {
+        this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
+      } catch (e) {
+        // Ignore audio node gain error
+      }
     }
     if (this.audioEl) {
-      // Direct element backup volume sync
-      this.audioEl.volume = this.volume;
+      try {
+        this.audioEl.volume = this.volume;
+      } catch (e) {
+        // Mobile iOS Safari might throw on volume assignment (hardware button controlled)
+      }
     }
     this.notify();
   }
@@ -117,22 +210,20 @@ class AudioEngineClass {
   }
 
   public togglePlay(track: Track) {
-    this.initContext();
+    this.unlockAudio();
+
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
+      this.ctx.resume().catch(() => {});
     }
 
     if (this.isRunning) {
       if (this.currentTrack?.id === track.id) {
-        // Pause
         this.pause();
         return;
       } else {
-        // Change track
         this.pause();
         this.currentTrack = track;
         this.playbackPosition = 0;
-        this.currentStep = 0;
         this.play();
       }
     } else {
@@ -143,39 +234,19 @@ class AudioEngineClass {
 
   public play() {
     if (!this.currentTrack) return;
-    this.initContext();
-    if (!this.ctx) return;
+    this.unlockAudio();
 
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
     }
 
-    // Must have a beatUrl now since synth fallback is removed
     if (this.currentTrack.beatUrl) {
       this.initAudioElement();
       if (this.audioEl) {
-        let targetUrl = this.currentTrack.beatUrl;
-        
-        // Transform common links to direct audio links
-        if (targetUrl.includes('dropbox.com')) {
-          targetUrl = targetUrl.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
-        } else if (targetUrl.includes('drive.google.com')) {
-          const idMatch = targetUrl.match(/\/d\/([^/]+)/);
-          if (idMatch) {
-            targetUrl = `https://docs.google.com/uc?export=download&id=${idMatch[1]}`;
-          }
-        } else if (targetUrl.includes('catbox.moe') && !targetUrl.includes('files.catbox.moe')) {
-          // Handle if user pastes the view link instead of direct file link
-          targetUrl = targetUrl.replace('catbox.moe', 'files.catbox.moe');
-        }
-
-        // Ensure protocol for common hosts if missing
-        if (targetUrl.startsWith('files.catbox.moe')) {
-          targetUrl = 'https://' + targetUrl;
-        }
+        const targetUrl = this.normalizeUrl(this.currentTrack.beatUrl);
 
         if (!targetUrl || targetUrl.length < 5) {
-          console.error("AudioEngine: Invalid beatUrl found for track:", {
+          console.error('AudioEngine: Invalid beatUrl found for track:', {
             id: this.currentTrack.id,
             title: this.currentTrack.title,
             url: targetUrl
@@ -185,26 +256,23 @@ class AudioEngineClass {
         }
 
         if (this.audioEl.src !== targetUrl) {
-          console.log("AudioEngine: Loading source", targetUrl, "for track:", this.currentTrack.title);
           this.audioEl.src = targetUrl;
           this.audioEl.load();
         }
-        
-        this.audioEl.play().catch(err => {
-          console.warn("AudioEngine Playback notice:", err?.message || err);
-          if (this.audioEl) {
-            this.audioEl.removeAttribute('crossOrigin');
-            this.audioEl.play().catch(() => {
-              if (this.audioEl) {
-                this.audioEl.src = 'https://actions.google.com/sounds/v1/music/synth_funk.ogg';
-                this.audioEl.load();
-                this.audioEl.play().catch(finalErr => {
-                  console.warn("Fallback playback also restricted:", finalErr?.message);
-                });
-              }
-            });
-          }
-        });
+
+        const playPromise = this.audioEl.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(err => {
+            console.warn('AudioEngine play rejection on primary attempt:', err?.message || err);
+            // Fallback attempt: remove crossOrigin and retry
+            if (this.audioEl) {
+              this.audioEl.removeAttribute('crossOrigin');
+              this.audioEl.play().catch(fallbackErr => {
+                console.warn('AudioEngine play fallback also rejected:', fallbackErr?.message || fallbackErr);
+              });
+            }
+          });
+        }
       }
       this.isRunning = true;
       this.notify();
@@ -213,19 +281,15 @@ class AudioEngineClass {
 
   public pause() {
     this.isRunning = false;
-    
-    // Pause element audio if loaded
     if (this.audioEl) {
       this.audioEl.pause();
     }
-
     this.notify();
   }
 
   public stop() {
     this.pause();
     this.playbackPosition = 0;
-    this.currentStep = 0;
     this.currentTrack = null;
     if (this.audioEl) {
       this.audioEl.currentTime = 0;
