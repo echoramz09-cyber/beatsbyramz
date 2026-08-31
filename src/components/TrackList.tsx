@@ -152,7 +152,7 @@ export default function TrackList({
                           setTimeout(() => setShowCopyPopup(false), 3000);
                           
                           setTimeout(() => {
-                            window.open('https://ig.me/m/beatsbyramz', '_blank');
+                            window.open('https://ig.me/m/craxx', '_blank');
                           }, 1000);
                         });
                       };
