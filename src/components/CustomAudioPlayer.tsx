@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, ChangeEvent } from 'react';
 import { Track } from '../types';
 import AudioEngine from '../utils/AudioEngine';
 import AudioVisualizer from './AudioVisualizer';
-import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio, Tag } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, RotateCcw, HelpCircle, Laptop, Radio, Tag, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface CustomAudioPlayerProps {}
@@ -94,6 +94,10 @@ export default function CustomAudioPlayer() {
     AudioEngine.togglePlay(currentTrack);
   };
 
+  const handleClose = () => {
+    AudioEngine.stop();
+  };
+
   // Format progress ticks to readable time (infinite loop progress simulation styled as bars)
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
@@ -163,11 +167,11 @@ export default function CustomAudioPlayer() {
             </button>
           </div>
 
-          {/* Right: Buy Button & Volume */}
+          {/* Right: Buy Button & Volume & Close */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <button 
               onClick={handleBuyNow}
-              className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-amber-400 hover:bg-yellow-300 text-black font-sans font-black text-[11px] uppercase tracking-wider shadow-md shadow-amber-500/20 active:scale-95 transition-all"
             >
               <Tag className="w-3.5 h-3.5 fill-black" />
               <span>Buy</span>
@@ -192,6 +196,16 @@ export default function CustomAudioPlayer() {
                 className="w-14 accent-amber-400 h-1 bg-zinc-900 rounded-lg cursor-pointer" 
               />
             </div>
+
+            {/* Close / Cut Preview Cross Button */}
+            <button
+              onClick={handleClose}
+              className="p-1.5 text-zinc-500 hover:text-white hover:bg-zinc-800/80 active:scale-90 rounded-lg transition-all"
+              title="Close Preview"
+              aria-label="Close Preview"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
